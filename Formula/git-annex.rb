@@ -1,59 +1,60 @@
-require "language/haskell"
-
 class GitAnnex < Formula
-  include Language::Haskell::Cabal
-
   desc "Manage files with git without checking in file contents"
   homepage "https://git-annex.branchable.com/"
-  url "https://hackage.haskell.org/package/git-annex-7.20191230/git-annex-7.20191230.tar.gz"
-  sha256 "227c9e7dd7fdf32398a3edaec418550c96d3e55cb05f012566f38f1de1264df7"
+  url "https://hackage.haskell.org/package/git-annex-8.20201129/git-annex-8.20201129.tar.gz"
+  sha256 "8324b71bafc5c30e630699534f410a9cfcfdfeed078dc62bc410f41244a1dd81"
+  license all_of: ["AGPL-3.0-or-later", "BSD-2-Clause", "BSD-3-Clause",
+                   "GPL-2.0-only", "GPL-3.0-or-later", "MIT"]
   head "git://git-annex.branchable.com/"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "d8574cec7e255e94a1fd3a2a42b05b4aa3802c25ff9452a9454ad10d124a3bbb" => :catalina
-    sha256 "c5e4e1242efb274e7036984c08165b71016a4735a92c96c2189debc3814d4ba5" => :mojave
-    sha256 "405814f5c8b37d26bea3ad4947a0fbbd18ac4efa8038b09b5684a7a496162dea" => :high_sierra
+    sha256 "0bbb56b04054ca98667fb71c8731b4d3894b436b9c04c3c030da01a6b939a7b5" => :big_sur
+    sha256 "ac8d58a49a0ea3d82e1796c33ee2e9032213db7c734dc0d12cf1bcd58e1cec13" => :catalina
+    sha256 "0235b53d49d4ba220139024aa924da0f14a12560a6beed7f1e8efa06cf5961a8" => :mojave
   end
 
   depends_on "cabal-install" => :build
-  depends_on "ghc@8.6" => :build
+  depends_on "ghc" => :build
   depends_on "pkg-config" => :build
   depends_on "gsasl"
   depends_on "libmagic"
   depends_on "quvi"
-  depends_on "xdot"
 
   def install
-    install_cabal_package "--constraint", "http-conduit>=2.3",
-                          "--constraint", "network>=2.6.3.0",
-                          :using => ["alex", "happy", "c2hs"],
-                          :flags => ["s3", "webapp"]
+    system "cabal", "v2-update"
+    system "cabal", "v2-install", *std_cabal_v2_args,
+                    "--flags=+S3"
     bin.install_symlink "git-annex" => "git-annex-shell"
   end
 
-  plist_options :manual => "git annex assistant --autostart"
+  plist_options manual: "git annex assistant --autostart"
 
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <false/>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/git-annex</string>
-          <string>assistant</string>
-          <string>--autostart</string>
-        </array>
-      </dict>
-    </plist>
-  EOS
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>KeepAlive</key>
+          <false/>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/git-annex</string>
+            <string>assistant</string>
+            <string>--autostart</string>
+          </array>
+        </dict>
+      </plist>
+    EOS
   end
 
   test do
@@ -69,6 +70,11 @@ class GitAnnex < Formula
     assert_match /^add Hello.txt.*ok.*\(recording state in git\.\.\.\)/m, shell_output("git annex add .")
     system "git", "commit", "-a", "-m", "Initial Commit"
     assert File.symlink?("Hello.txt")
+
+    # make sure the various remotes were built
+    assert_match shell_output("git annex version | grep 'remote types:'").chomp,
+                 "remote types: git gcrypt p2p S3 bup directory rsync web bittorrent " \
+                 "webdav adb tahoe glacier ddar git-lfs httpalso borg hook external"
 
     # The steps below are necessary to ensure the directory cleanly deletes.
     # git-annex guards files in a way that isn't entirely friendly of automatically

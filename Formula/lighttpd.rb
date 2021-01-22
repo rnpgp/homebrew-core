@@ -1,15 +1,20 @@
 class Lighttpd < Formula
   desc "Small memory footprint, flexible web-server"
   homepage "https://www.lighttpd.net/"
-  url "https://download.lighttpd.net/lighttpd/releases-1.4.x/lighttpd-1.4.54.tar.xz"
-  sha256 "cf14cce2254a96d8fcb6d3181e1a3c29a8f832531c3e86ff6f2524ecda9a8721"
-  revision 1
+  url "https://download.lighttpd.net/lighttpd/releases-1.4.x/lighttpd-1.4.58.tar.xz"
+  sha256 "267feffda13a190ebdce7b15172d8be16da98008457f30fddecd72832d126d0e"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url "https://download.lighttpd.net/lighttpd/releases-1.4.x/"
+    regex(/href=.*?lighttpd[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "2304d5648f19472c302da66804ea9a9b3cc8f99dbd1af4f52d6e2f4735791b2b" => :catalina
-    sha256 "72ff091bcfe57ff9cffdfd0085df6f9d762af2ae035aae6df9c4d5dc79cf488b" => :mojave
-    sha256 "bc6a0b55b7a9d498a22531ee598deb41f3807ca5ec5d1a76622112b5ecb12471" => :high_sierra
-    sha256 "1ef383b4243ad91d306f8dead8a0ff161bbec840e3a8db226e45ddaa6fb5d3a3" => :sierra
+    sha256 "ae1d303787fd7ca9a7c568ad6d6433c6fb8a1e5c3a635ce0557c466f2e591690" => :big_sur
+    sha256 "0a51151b104b49f3441184f4ca6ca217c652205433284673904f74264c9cb7c6" => :arm64_big_sur
+    sha256 "5c4a953e2c563c975d3a8d835614a49d8aebf9daa8e9a1eaa1d426aa2e524d5e" => :catalina
+    sha256 "0742066005e53a6cfa4d4aad06f3ff16f82439932ec0f265f0a8812cb52bce66" => :mojave
   end
 
   depends_on "autoconf" => :build
@@ -67,7 +72,7 @@ class Lighttpd < Formula
         s.sub!(/^var\.home_dir\s*=\s*".+"$/, "var.home_dir    = \"#{run_path}\"")
         s.sub!(/^var\.conf_dir\s*=\s*".+"$/, "var.conf_dir    = \"#{config_path}\"")
         s.sub!(/^server\.port\s*=\s*80$/, "server.port = 8080")
-        s.sub!(%r{^server\.document-root\s*=\s*server_root \+ "\/htdocs"$}, "server.document-root = server_root")
+        s.sub!(%r{^server\.document-root\s*=\s*server_root \+ "/htdocs"$}, "server.document-root = server_root")
 
         # get rid of "warning: please use server.use-ipv6 only for hostnames, not
         # without server.bind / empty address; your config will break if the kernel
@@ -76,7 +81,6 @@ class Lighttpd < Formula
 
         s.sub!(/^server\.username\s*=\s*".+"$/, 'server.username  = "_www"')
         s.sub!(/^server\.groupname\s*=\s*".+"$/, 'server.groupname = "_www"')
-        s.sub!(/^server\.event-handler\s*=\s*"linux-sysepoll"$/, 'server.event-handler = "select"')
         s.sub!(/^server\.network-backend\s*=\s*"sendfile"$/, 'server.network-backend = "writev"')
 
         # "max-connections == max-fds/2",
@@ -90,53 +94,55 @@ class Lighttpd < Formula
     run_path.mkpath
   end
 
-  def caveats; <<~EOS
-    Docroot is: #{www_path}
+  def caveats
+    <<~EOS
+      Docroot is: #{www_path}
 
-    The default port has been set in #{config_path}/lighttpd.conf to 8080 so that
-    lighttpd can run without sudo.
-  EOS
+      The default port has been set in #{config_path}/lighttpd.conf to 8080 so that
+      lighttpd can run without sudo.
+    EOS
   end
 
-  plist_options :manual => "lighttpd -f #{HOMEBREW_PREFIX}/etc/lighttpd/lighttpd.conf"
+  plist_options manual: "lighttpd -f #{HOMEBREW_PREFIX}/etc/lighttpd/lighttpd.conf"
 
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/lighttpd</string>
-        <string>-D</string>
-        <string>-f</string>
-        <string>#{config_path}/lighttpd.conf</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>KeepAlive</key>
-      <false/>
-      <key>WorkingDirectory</key>
-      <string>#{HOMEBREW_PREFIX}</string>
-      <key>StandardErrorPath</key>
-      <string>#{log_path}/output.log</string>
-      <key>StandardOutPath</key>
-      <string>#{log_path}/output.log</string>
-      <key>HardResourceLimits</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
       <dict>
-        <key>NumberOfFiles</key>
-        <integer>#{MAX_FDS}</integer>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/lighttpd</string>
+          <string>-D</string>
+          <string>-f</string>
+          <string>#{config_path}/lighttpd.conf</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <false/>
+        <key>WorkingDirectory</key>
+        <string>#{HOMEBREW_PREFIX}</string>
+        <key>StandardErrorPath</key>
+        <string>#{log_path}/output.log</string>
+        <key>StandardOutPath</key>
+        <string>#{log_path}/output.log</string>
+        <key>HardResourceLimits</key>
+        <dict>
+          <key>NumberOfFiles</key>
+          <integer>#{MAX_FDS}</integer>
+        </dict>
+        <key>SoftResourceLimits</key>
+        <dict>
+          <key>NumberOfFiles</key>
+          <integer>#{MAX_FDS}</integer>
+        </dict>
       </dict>
-      <key>SoftResourceLimits</key>
-      <dict>
-        <key>NumberOfFiles</key>
-        <integer>#{MAX_FDS}</integer>
-      </dict>
-    </dict>
-    </plist>
-  EOS
+      </plist>
+    EOS
   end
 
   test do

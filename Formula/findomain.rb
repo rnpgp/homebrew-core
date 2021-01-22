@@ -1,20 +1,23 @@
 class Findomain < Formula
   desc "Cross-platform subdomain enumerator"
-  homepage "https://github.com/Edu4rdSHL/findomain"
-  url "https://github.com/Edu4rdSHL/findomain/archive/0.9.6.tar.gz"
-  sha256 "8d8ae150f4af58a5e65894646d267e30b887adc13ab691473d2f37da589c1849"
+  homepage "https://github.com/Findomain/findomain"
+  url "https://github.com/Findomain/findomain/archive/2.1.5.tar.gz"
+  sha256 "31182a63f2d2002e5dc99e8f809157c18e660a9964cbbc9faa249e131493c635"
+  license "GPL-3.0-or-later"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9485ab03c88d96be60a6745533e1cbeeb349563301580db253cc83b95ad975c8" => :catalina
-    sha256 "dc3008469ed23ee373aa697f53b31afb94a9e0f0c6635c99d95c6d8813900b13" => :mojave
-    sha256 "947f82536ccf9f22709ed31cf4d3e2fb3d601ecfb1fdd6b1c05700f98ac5db35" => :high_sierra
+    rebuild 1
+    sha256 "4ad50723952f3be57618a6d8abe573a0ee3485bcd132f6ef7f6747a676236c8e" => :big_sur
+    sha256 "048595848f25aab1d8ce875ee206f2de26bff21d481af45386f3dcfe6bb60a00" => :arm64_big_sur
+    sha256 "fe80011577eafc2f17973ea265859b41a13064e039179fa663a7cdbcf9199d45" => :catalina
+    sha256 "4f19c79953f6e322684eeeda38a79c3a0bdeb05b6665007aa042d8644e555a8d" => :mojave
   end
 
   depends_on "rust" => :build
 
   def install
-    system "cargo", "install", "--locked", "--root", prefix, "--path", "."
+    system "cargo", "install", *std_cargo_args
   end
 
   test do

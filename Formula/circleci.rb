@@ -3,15 +3,16 @@ class Circleci < Formula
   homepage "https://circleci.com/docs/2.0/local-cli/"
   # Updates should be pushed no more frequently than once per week.
   url "https://github.com/CircleCI-Public/circleci-cli.git",
-      :tag      => "v0.1.5879",
-      :revision => "416032d85e2c8dec0ca6322baf07255ac851f50c"
+      tag:      "v0.1.11756",
+      revision: "b3861824d1cfee9362758dc7583128a28e74677e"
+  license "MIT"
+  head "https://github.com/CircleCI-Public/circleci-cli.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6c70e1810214aac26798cfc5ac8734fbecae1baee3af9af8b5f45dedca66d30c" => :catalina
-    sha256 "48adff67b7d69ed1a6656a754e754e8cae67ce4ec7929a805c405bbce89eabc9" => :mojave
-    sha256 "b82e42bd9c5026de007fbb5c684e8fd2875db82c25a935b9e22ff5563d94217f" => :high_sierra
-    sha256 "37088c6cc436902542b008a3f78aad369f7a199f0d24cb2b3573d0e95a795256" => :sierra
+    sha256 "e3f12c7c869c912bd086ab97372703faaf6d95e39ffb75b5479fac7af9ff0f60" => :big_sur
+    sha256 "500a3d3cf798e6355ff90cec4c63b01c14b23ad3f0e67fc5a2694ed1ed104b51" => :catalina
+    sha256 "68421c697b12db9496115c5b18aaafa6d27a78f29db30659644e93d27fa7fa7d" => :mojave
   end
 
   depends_on "go" => :build
@@ -23,12 +24,11 @@ class Circleci < Formula
     dir.install buildpath.children
 
     cd dir do
-      commit = Utils.popen_read("git rev-parse --short HEAD").chomp
       ldflags = %W[
         -s -w
-        -X github.com/CircleCI-Public/circleci-cli/cmd.PackageManager=homebrew
+        -X github.com/CircleCI-Public/circleci-cli/version.packageManager=homebrew
         -X github.com/CircleCI-Public/circleci-cli/version.Version=#{version}
-        -X github.com/CircleCI-Public/circleci-cli/version.Commit=#{commit}
+        -X github.com/CircleCI-Public/circleci-cli/version.Commit=#{Utils.git_short_head}
       ]
       system "make", "pack"
       system "go", "build", "-ldflags", ldflags.join(" "),
@@ -40,12 +40,12 @@ class Circleci < Formula
   test do
     # assert basic script execution
     assert_match /#{version}\+.{7}/, shell_output("#{bin}/circleci version").strip
-    # assert script fails because 2.1 config is not supported for local builds
     (testpath/".circleci.yml").write("{version: 2.1}")
-    output = shell_output("#{bin}/circleci build -c #{testpath}/.circleci.yml 2>&1", 255)
-    assert_match "Local builds do not support that version at this time", output
+    output = shell_output("#{bin}/circleci config pack #{testpath}/.circleci.yml")
+    assert_match "version: 2.1", output
     # assert update is not included in output of help meaning it was not included in the build
     assert_match "update      This command is unavailable on your platform", shell_output("#{bin}/circleci help")
-    assert_match "`update` is not available because this tool was installed using `homebrew`.", shell_output("#{bin}/circleci update")
+    assert_match "`update` is not available because this tool was installed using `homebrew`.",
+      shell_output("#{bin}/circleci update")
   end
 end

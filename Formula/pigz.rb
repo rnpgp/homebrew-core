@@ -4,14 +4,23 @@ class Pigz < Formula
   url "https://zlib.net/pigz/pigz-2.4.tar.gz"
   sha256 "a4f816222a7b4269bd232680590b579ccc72591f1bb5adafcd7208ca77e14f73"
 
+  livecheck do
+    url :homepage
+    regex(/href=.*?pigz[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
+
   bottle do
     cellar :any_skip_relocation
+    sha256 "65b5e19d6b5afceb89c94600e9c517f2444ca94eca76be5b1ccd53cf9607b777" => :big_sur
+    sha256 "c110e8491b74dbca9a4b81c24a71a1b0b559edc3723845b42d0134e5da473b01" => :arm64_big_sur
     sha256 "f9d47b369bad1ec3571d06fb40a1ad926e14360a13ec6e1fc16a6be8a81b7ed7" => :catalina
     sha256 "341c5f3c0a82aedd822b2dd187ecc12b3dbdea9b2f00b08ce7ba049916557314" => :mojave
     sha256 "216e716eafd2786ed6fa672daf27bb77b420e05f92a14cfeccab28a6be6b7778" => :high_sierra
     sha256 "9173b4bdf36c787ad7a3b7d738236e0393430b607ba44d5a32fa387b008a347a" => :sierra
     sha256 "d0c4ec5ac96ab0262d5e67bd5df5432d7dc40ac1404341962c02835ca8451b5c" => :el_capitan
   end
+
+  uses_from_macos "zlib"
 
   def install
     # Fix dyld: lazy symbol binding failed: Symbol not found: _deflatePending

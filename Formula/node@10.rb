@@ -1,21 +1,30 @@
 class NodeAT10 < Formula
   desc "Platform built on V8 to build network applications"
   homepage "https://nodejs.org/"
-  url "https://nodejs.org/dist/v10.18.1/node-v10.18.1.tar.gz"
-  sha256 "80a61ffbe6d156458ed54120eb0e9fff7b626502e0986e861d91b365f7e876db"
+  url "https://nodejs.org/dist/v10.23.1/node-v10.23.1.tar.xz"
+  sha256 "88aa16f5af79615b183ca55ed81393763169e75d1fb96013cf1831895c6cedfa"
+  license "MIT"
+
+  livecheck do
+    url "https://nodejs.org/dist/"
+    regex(%r{href=["']?v?(10(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
     cellar :any
-    sha256 "dd9b2be5e5d18a1f6987689d57e985730d18e4593aa1750b17d2169554e381a7" => :catalina
-    sha256 "f8bc466b94649279da90125454b11a2de6a6613bf550b44dfed73c1de72fd29f" => :mojave
-    sha256 "e71a398afe80625338776ad7b296072a8c19a22757720857581002e69a70dc43" => :high_sierra
+    sha256 "9b559405ec7fd06d27ccf42e32d701584f5b9bbc82daa0b326dd3b8106a1be0e" => :big_sur
+    sha256 "4cdacb85745a621f6c9a5c68a3f85cd2120948ce7422b5040e35a7cb1ddc64a1" => :catalina
+    sha256 "da429b4bd778eae04b4bdbe1a9cca7bb53183bef25d4c4ffa63840646fcaf008" => :mojave
   end
 
   keg_only :versioned_formula
 
+  deprecate! date: "2021-04-30", because: :unsupported
+
   depends_on "pkg-config" => :build
   depends_on "icu4c"
-  uses_from_macos "python@2" => :build
+  depends_on :macos # Due to Python 2 (Will not work with Python 3 without extensive patching)
+  # Node 10 will be EOL April 2021
 
   def install
     system "./configure", "--prefix=#{prefix}", "--with-intl=system-icu"

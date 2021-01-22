@@ -1,27 +1,34 @@
 class Jetty < Formula
   desc "Java servlet engine and webserver"
   homepage "https://www.eclipse.org/jetty/"
-  url "https://search.maven.org/remotecontent?filepath=org/eclipse/jetty/jetty-distribution/9.4.25.v20191220/jetty-distribution-9.4.25.v20191220.tar.gz"
-  version "9.4.25.v20191220"
-  sha256 "2af42f9aab19ffc390225d1395ea430ee4d070d0fc72ac63d3798ab62d24ddca"
+  url "https://search.maven.org/remotecontent?filepath=org/eclipse/jetty/jetty-distribution/9.4.35.v20201120/jetty-distribution-9.4.35.v20201120.tar.gz"
+  version "9.4.35.v20201120"
+  sha256 "5b2d099a167e70628873db54af4ac6a16029909691408a8468ee446e3eceedb2"
+  license any_of: ["Apache-2.0", "EPL-1.0"]
+
+  livecheck do
+    url "https://www.eclipse.org/jetty/download.php"
+    regex(/href=.*?jetty-distribution[._-]v?(\d+(?:\.\d+)+(?:\.v\d+)?)\.t/i)
+  end
 
   bottle :unneeded
 
-  depends_on :java => "1.8+"
+  depends_on "openjdk"
 
   def install
     libexec.install Dir["*"]
-    (libexec+"logs").mkpath
+    (libexec/"logs").mkpath
 
     bin.mkpath
     Dir.glob("#{libexec}/bin/*.sh") do |f|
       scriptname = File.basename(f, ".sh")
-      (bin+scriptname).write <<~EOS
+      (bin/scriptname).write <<~EOS
         #!/bin/bash
-        JETTY_HOME=#{libexec}
-        #{f} "$@"
+        export JETTY_HOME='#{libexec}'
+        export JAVA_HOME="${JAVA_HOME:-#{Formula["openjdk"].opt_prefix}}"
+        exec #{f} "$@"
       EOS
-      chmod 0755, bin+scriptname
+      chmod 0755, bin/scriptname
     end
   end
 

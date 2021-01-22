@@ -2,14 +2,23 @@ class Pike < Formula
   desc "Dynamic programming language"
   homepage "https://pike.lysator.liu.se/"
   url "https://pike.lysator.liu.se/pub/pike/latest-stable/Pike-v8.0.702.tar.gz"
+  # Homepage has an expired SSL cert as of 16/12/2020, so we add a Debian mirror
+  mirror "http://deb.debian.org/debian/pool/main/p/pike8.0/pike8.0_8.0.702.orig.tar.gz"
   sha256 "c47aad2e4f2c501c0eeea5f32a50385b46bda444f922a387a5c7754302f12a16"
+  license any_of: ["GPL-2.0-only", "LGPL-2.1-only", "MPL-1.1"]
+  revision 4
+
+  livecheck do
+    url "https://pike.lysator.liu.se/download/pub/pike/latest-stable/"
+    regex(/href=.*?Pike[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "f299725be9679d3be3abcb580dc81c6512ae66e1a1a3b2034e329212899cfcff" => :catalina
-    sha256 "f588f3ad79e59c90e7339fba213f67102b7040bb42fad2437ec4d3094e636295" => :mojave
-    sha256 "5d67e09c9bb49b77a1a670591d6d2c1f8f039efe4b2b18c50e0f8941c072e976" => :high_sierra
+    sha256 "5aa4cacc8d0fd3d81fca3e029a74813f3c40b2a8d27684b9ee665aece4b50f45" => :big_sur
+    sha256 "0e1de33bfc595a2a4b944b496aa886ab620554fbea24bbf080cef9403b8fc24f" => :arm64_big_sur
+    sha256 "65526e58ded68ff16a6eb53104406f48ac535ac955912b320c724b497d418619" => :catalina
+    sha256 "550251a57aacd9f491cfda25c997a544bd993dcd1c9b1d29f03e7386bf16c758" => :mojave
   end
 
   depends_on "gmp"
@@ -17,9 +26,16 @@ class Pike < Formula
   depends_on "nettle"
   depends_on "pcre"
 
+  on_linux do
+    depends_on "jpeg"
+  end
+
   def install
     ENV.append "CFLAGS", "-m64"
     ENV.deparallelize
+
+    # Workaround for https://git.lysator.liu.se/pikelang/pike/-/issues/10058
+    ENV.append "CFLAGS", "-Wno-implicit-function-declaration"
 
     system "make", "CONFIGUREARGS='--prefix=#{prefix} --without-bundles --with-abi=64'"
 

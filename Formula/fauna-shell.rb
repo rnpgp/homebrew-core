@@ -3,14 +3,20 @@ require "language/node"
 class FaunaShell < Formula
   desc "Interactive shell for FaunaDB"
   homepage "https://fauna.com/"
-  url "https://registry.npmjs.org/fauna-shell/-/fauna-shell-0.10.0.tgz"
-  sha256 "0af05027f5d01d9058db45d24955ba2ab41591237f9b9af62b7c8e34fb7ef055"
+  url "https://registry.npmjs.org/fauna-shell/-/fauna-shell-0.12.1.tgz"
+  sha256 "39c0b0ab000775377249811cbd88b5d2c0a9d4a5e921b90fce8c20511c2dcc07"
+  license "MPL-2.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "12f82c3c0a1d7c0f86300fe9dcbdbe36681cc48f99b3fe8220296862b5962d57" => :catalina
-    sha256 "75fee11abe76543cc547bd9268d0d2f72c331a013daca4a0e5eefbce091b012f" => :mojave
-    sha256 "7e24cbcdafe28790bb3afe2f26742afece6b598a9dc95ecb09082cb673e5d87c" => :high_sierra
+    sha256 "b30da664c887e17a111758e0d455a87043accf19555421043fcf447225335aa6" => :big_sur
+    sha256 "916626cf79d0135debe039b8f8ba65fc399b11d45d050752eb2014eb9a649273" => :arm64_big_sur
+    sha256 "d64304723f15313b836c6be3425564652e7809472f7874f46f1ae4e126a8d59e" => :catalina
+    sha256 "53bc6294bfac102240ded13bf16ba4eb55a8a042e0d920a77de2393a3a916fd3" => :mojave
   end
 
   depends_on "node"

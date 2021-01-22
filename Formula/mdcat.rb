@@ -1,21 +1,27 @@
 class Mdcat < Formula
   desc "Show markdown documents on text terminals"
   homepage "https://github.com/lunaryorn/mdcat"
-  url "https://github.com/lunaryorn/mdcat/archive/mdcat-0.15.0.tar.gz"
-  sha256 "91b5abff3e525df4f97f2677b0d099a79ea3dd0037fcdf11aad8886403f922ae"
+  url "https://github.com/lunaryorn/mdcat/archive/mdcat-0.22.2.tar.gz"
+  sha256 "92102c448c1742aa69604817d7d209c69ce1db5261cb6d8f0bb98cdc6c4f02f9"
+  license "MPL-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "be8eedc0fd6900ffaaaf1bca43928cfa14fc35443b112494c308270dd63ec940" => :catalina
-    sha256 "7f0c907a382e09c8429da319b004bb7f9bffc56d14ed54b3c0b012308f422d22" => :mojave
-    sha256 "005938f60dc3aec1ab83fbb9e8cc843fe4ea20f874a59ba20b047b3b37290083" => :high_sierra
+    sha256 "cd7462ead62dca44da914a890c0e16e4bc2e334b9973d99b47c77c8d23722a76" => :big_sur
+    sha256 "874f6ef6565821c7ebccfaf032c0616e64c667214779f07fdb489f43c8499c73" => :arm64_big_sur
+    sha256 "26cc236d7acf8ee17d2b9cf6b3e7f1ffa47c86d4b1abc40e1acd5ad418bc1c01" => :catalina
+    sha256 "9aca864d6a18421d4daba029d9e8568c0bc1e8a3a3b51013c62b53237b4ba156" => :mojave
   end
 
   depends_on "cmake" => :build
   depends_on "rust" => :build
 
+  on_linux do
+    depends_on "pkg-config" => :build
+  end
+
   def install
-    system "cargo", "install", "--locked", "--root", prefix, "--path", "."
+    system "cargo", "install", *std_cargo_args
   end
 
   test do

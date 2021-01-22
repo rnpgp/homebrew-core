@@ -5,16 +5,23 @@ class DockerSquash < Formula
   homepage "https://github.com/goldmann/docker-squash"
   url "https://files.pythonhosted.org/packages/8c/b4/429be44bdb8ad42bbca4ab4a813f771ef517b00a8d733feb6d62716c4209/docker-squash-1.0.8.tar.gz"
   sha256 "f677bc9129d1156516454b0b334cdc2642f7b9a3328dca3a7477c43ac5ee23a9"
-  revision 1
+  license "MIT"
+  revision 3
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "8ead2027bde16b9a95669e7cf27c4a2bbc62062866d3f22fb689ee265e648e93" => :catalina
-    sha256 "f8fffacef91f2f33bffd9b48a7d3e7441e1b9518ec3b8bff3692c2c96ab048e2" => :mojave
-    sha256 "a7620d50b1b463b766f034a0369e2b78fefc4cad238511b8e7e135638be69a8a" => :high_sierra
+    sha256 "5037e7ed624b62a548cb2d06398c78f4737c55c2203e59654886fef6c7d2ed3f" => :big_sur
+    sha256 "99a172715fd8867c336673dd127525bcf10074050d0d97173e26abdbe393d0c5" => :arm64_big_sur
+    sha256 "8eba8e475bd16f666d5dcae8c86c6903a6284714fd39827ef022846436482ddc" => :catalina
+    sha256 "e8f93445d63859ffbe3a7b3607f736c8171cbb34f5277dc99f9e5b431726d1bf" => :mojave
+    sha256 "b808d930d8ac2950359fd87047dec4c8a04b771f54c41c632916761cff647d8f" => :high_sierra
   end
 
-  depends_on "python@3.8"
+  depends_on "python@3.9"
 
   resource "certifi" do
     url "https://files.pythonhosted.org/packages/41/bf/9d214a5af07debc6acf7f3f257265618f1db242a3f8e49a9b516f24523a6/certifi-2019.11.28.tar.gz"

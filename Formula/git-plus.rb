@@ -3,19 +3,26 @@ class GitPlus < Formula
 
   desc "Git utilities: git multi, git relation, git old-branches, git recent"
   homepage "https://github.com/tkrajina/git-plus"
-  url "https://files.pythonhosted.org/packages/72/75/5de42fceb6a7feb50386f29bd2a9d5391c90ba4e74ab78d86c095edd9f21/git-plus-v0.3.3.tar.gz"
-  sha256 "54fa88f82e52863dcf5f2d44c258a22e8d31232473300a4384eba8e2f71df1ea"
+  url "https://files.pythonhosted.org/packages/73/b5/6cf7f0513fd1ef42b5a3ac0e342b3c4176551f60ad17fc5dbe52329f2b58/git-plus-v0.4.6.tar.gz"
+  sha256 "bcf3a83a2730e8b6f5bc106db00b7b6be5df534cb9543ba7ecc506c535c5158b"
+  license "Apache-2.0"
   revision 1
   head "https://github.com/tkrajina/git-plus.git"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "6bdcfe17d7687fad2e523e104b473744831806b1bf5915d9248a6d36dd6d28e6" => :catalina
-    sha256 "ee281bb04fe93d458c63dba2648861dd30e2003f5bb8871e650959134c6daca7" => :mojave
-    sha256 "72ec0aecb258232a837709d55ae03b4068db623c5f6b214bb2cbedd826c1152e" => :high_sierra
+  livecheck do
+    url :stable
   end
 
-  depends_on "python@3.8"
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "6fbeb0f79fb3149feec139360140b71dc8905336fe3e57979a5555542b14315d" => :big_sur
+    sha256 "e2a53a282b0e444cb0aca6173d8475b803b247b72462605574f28f62d2f7d9b9" => :arm64_big_sur
+    sha256 "77a2c33cfbcaa7eeebf0599197ef9865821df0a513c60f768586049c78795709" => :catalina
+    sha256 "de4043e1cd948c93b60ba863ddc3ed42528e733263efb54f4e4c608cc6fcb148" => :mojave
+    sha256 "774bf600193c1446a6097675f995ec808eada8f45d9b78f735121de23cd3d56c" => :high_sierra
+  end
+
+  depends_on "python@3.9"
 
   def install
     virtualenv_install_with_resources
@@ -24,6 +31,8 @@ class GitPlus < Formula
   test do
     mkdir "testme" do
       system "git", "init"
+      system "git", "config", "user.email", "\"test@example.com\""
+      system "git", "config", "user.name", "\"Test\""
       touch "README"
       system "git", "add", "README"
       system "git", "commit", "-m", "testing"

@@ -1,18 +1,21 @@
 class GrpcSwift < Formula
-  desc "The Swift language implementation of gRPC"
+  desc "Swift language implementation of gRPC"
   homepage "https://github.com/grpc/grpc-swift"
-  url "https://github.com/grpc/grpc-swift/archive/0.9.1.tar.gz"
-  sha256 "6b3a2ed13c805c6b8f339f558f2a1372bdcf84c079c104a6d0b54fd7650b8fbf"
+  url "https://github.com/grpc/grpc-swift/archive/0.11.0.tar.gz"
+  sha256 "82e0a3d8fe2b9ee813b918e1a674f5a7c6dc024abe08109a347b686db6e57432"
+  license "Apache-2.0"
+  revision 1
   head "https://github.com/grpc/grpc-swift.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "40d3fbbc0193fbc46f029c6c5795ea8bc0faaabe7ea14073a4dc9cb0c98f1c54" => :catalina
-    sha256 "f8d66abf01b8b8573b58718a8999ab905619a2b677aa24050dab78e1cd1323de" => :mojave
-    sha256 "a8abd068afd441640955a8399ebb07c63228716e6ecd7198258f9e4b92a22e4f" => :high_sierra
+    sha256 "a0be8359b1b6052cc554f3a9b672162eed4ab6e7e20928c424c0916d110e286f" => :big_sur
+    sha256 "e739583a67354478a9f950375763d41080698e74aeee0d0195773ac7ca383096" => :arm64_big_sur
+    sha256 "5a13e8a2f8e6111ceb163fd1aac8810a278f32317ebffb3563d5860a9a510db2" => :catalina
+    sha256 "0311e7d2eb0f1c5569fd51732dd7e9e917423bcad57e651d4d8a5c468168a55a" => :mojave
   end
 
-  depends_on :xcode => ["10.0", :build]
+  depends_on xcode: ["10.0", :build]
   depends_on "protobuf"
   depends_on "swift-protobuf"
 

@@ -1,16 +1,21 @@
 class Luit < Formula
   desc "Filter run between arbitrary application and UTF-8 terminal emulator"
   homepage "https://invisible-island.net/luit/"
-  url "https://invisible-mirror.net/archives/luit/luit-20180628.tgz"
-  sha256 "7b84f63072589e9b03bb3e99e01ef344bb37793b76ad1cbb7b11f05000d64844"
+  url "https://invisible-mirror.net/archives/luit/luit-20201003.tgz"
+  sha256 "c948da3c8b163e8e8f23cbe1255e7f3fa234c48aaf470b201ce55a3ecb4ad985"
+  license "MIT"
+
+  livecheck do
+    url "https://invisible-mirror.net/archives/luit/"
+    regex(/href=.*?luit[._-]v?(\d+(?:[.-]\d+)*)\.t/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "7a5b7cd204c8ec9c898d5051638dfaaf390c7fd6401b44841a08136e6ae7538e" => :catalina
-    sha256 "fd907214b6c2fc1bda914531c8c0971c34c63aaa3478ca3f0c21ddbeca1bc0f7" => :mojave
-    sha256 "8c1e5b87146d2ea2682b473193942bc92bcd52422d391aa74fb585859da05091" => :high_sierra
-    sha256 "a71855f672f1416741873a9ff816f8d15980bb0002429937cb85fd6a21b0fd4c" => :sierra
+    sha256 "15a8a5131d2751a372eb1304cff89af4a0437255de8b35221611021cb810d6b9" => :big_sur
+    sha256 "95869407113a13608e1c8063775f3a43d5c4f43d68a32179d2b0b7e6b4ef24d5" => :arm64_big_sur
+    sha256 "a26f38e63953d9107400fc4ba2bf66216041aaa76cffb69dfc975c03327b2850" => :catalina
+    sha256 "6e8560fb5defe523bce78f14e02a1dc46388c1b39755cb1ae6eedc9d6ea24738" => :mojave
   end
 
   def install

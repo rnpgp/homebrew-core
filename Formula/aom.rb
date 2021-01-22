@@ -2,15 +2,16 @@ class Aom < Formula
   desc "Codec library for encoding and decoding AV1 video streams"
   homepage "https://aomedia.googlesource.com/aom"
   url "https://aomedia.googlesource.com/aom.git",
-      :tag      => "v1.0.0",
-      :revision => "d14c5bb4f336ef1842046089849dee4a301fbbf0"
+      tag:      "v2.0.1",
+      revision: "b52ee6d44adaef8a08f6984390de050d64df9faa"
+  license "BSD-2-Clause"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "1c49d2f8eee438f057d689a3ac68af545e4462ebd2db2fdd9a749fb6a1842da7" => :catalina
-    sha256 "f326a5ea77c38ea80d81c6302d6e2d314a7407d036f881bf4783cf3d757bb473" => :mojave
-    sha256 "fedb7991299e8e84ed4ce94ad3cc161951aa10d3044fc9446009046d17eb1e2f" => :high_sierra
+    sha256 "c03472a3e8dd38972fe30ee245dade96626c7927f511b7c39eb5b1b6f789e34b" => :big_sur
+    sha256 "06d96aee6c62b57139fec871110fb0c53bbe0bea114f50ab4655dda087ae54ba" => :arm64_big_sur
+    sha256 "ebac8d7473e89b82ad00046243ef47207c0823e410c4d3c40483a81324ad2a4c" => :catalina
+    sha256 "99912d7dfc789ce059c33ea739f736930c40ea59ce58a70a6ee2478199b4363b" => :mojave
   end
 
   depends_on "cmake" => :build
@@ -22,17 +23,15 @@ class Aom < Formula
   end
 
   def install
-    # Work around Xcode 11 clang bug
-    # https://bitbucket.org/multicoreware/x265/issues/514/wrong-code-generated-on-macos-1015
-    ENV.append_to_cflags "-fno-stack-check" if DevelopmentTools.clang_build_version >= 1010
-
     mkdir "macbuild" do
-      system "cmake", "..", *std_cmake_args,
-                      "-DENABLE_DOCS=off",
-                      "-DENABLE_EXAMPLES=on",
-                      "-DENABLE_TESTDATA=off",
-                      "-DENABLE_TESTS=off",
-                      "-DENABLE_TOOLS=off"
+      args = std_cmake_args.concat(["-DENABLE_DOCS=off",
+                                    "-DENABLE_EXAMPLES=on",
+                                    "-DENABLE_TESTDATA=off",
+                                    "-DENABLE_TESTS=off",
+                                    "-DENABLE_TOOLS=off"])
+      # Runtime CPU detection is not currently enabled for ARM on macOS.
+      args << "-DCONFIG_RUNTIME_CPU_DETECT=0" if Hardware::CPU.arm?
+      system "cmake", "..", *args
 
       system "make", "install"
     end

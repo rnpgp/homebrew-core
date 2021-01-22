@@ -1,16 +1,16 @@
 class Goaccess < Formula
   desc "Log analyzer and interactive viewer for the Apache Webserver"
   homepage "https://goaccess.io/"
-  url "https://tar.goaccess.io/goaccess-1.3.tar.gz"
-  sha256 "8c775c5c24bf85a933fd6f1249004847342d6542aa533e4ec02aaf7be41d7b9b"
-  revision 1
+  url "https://tar.goaccess.io/goaccess-1.4.3.tar.gz"
+  sha256 "91fb13a194e1248188007f1bfb79e722faa001479c859ad34d2e5983406161c0"
+  license "MIT"
   head "https://github.com/allinurl/goaccess.git"
 
   bottle do
-    sha256 "9c305445bc22da2f3d8ad97ccdcb7add64c2afd324377657851b313be75e0680" => :catalina
-    sha256 "1e6c45b187083c3e39a477309439cfec74e8a255ac83e7f444d26fb707f0654f" => :mojave
-    sha256 "724e69d15a0b7736af661e69a4a7b247489ecd53cd8b26d64d8ed591aeea69bc" => :high_sierra
-    sha256 "8c120ad2ff8e1f105b7cdb0812e5613ec6abec8f75d27260b21a1dfc913036a8" => :sierra
+    sha256 "527c1e4d90f44d3e962630e8069033d0ce85ead276e2ef648e41ec75f08d7b90" => :big_sur
+    sha256 "d680eea84ac33cc1265825b9811925f5ae5d565cb4a2be58222b971cb25245e6" => :arm64_big_sur
+    sha256 "7d4f0056b16e399c48fbb7c695491dab296b0eccb9b5034cf8473dd1f4d8aa57" => :catalina
+    sha256 "aaa132532ebc07d5817cf8f30f3f957f12dcab6b25a3665420bf7aa02ad79c24" => :mojave
   end
 
   depends_on "autoconf" => :build

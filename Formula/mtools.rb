@@ -1,29 +1,28 @@
 class Mtools < Formula
   desc "Tools for manipulating MSDOS files"
   homepage "https://www.gnu.org/software/mtools/"
-  url "https://ftp.gnu.org/gnu/mtools/mtools-4.0.23.tar.gz"
-  mirror "https://ftpmirror.gnu.org/mtools/mtools-4.0.23.tar.gz"
-  sha256 "110881884bb447b6243471dab4def937a344267a05ccc60a13503065ac992c39"
+  url "https://ftp.gnu.org/gnu/mtools/mtools-4.0.26.tar.gz"
+  mirror "https://ftpmirror.gnu.org/mtools/mtools-4.0.26.tar.gz"
+  sha256 "b1adb6973d52b3b70b16047e682f96ef1b669d6b16894c9056a55f407e71cd0f"
+  license "GPL-3.0-or-later"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "2ac51535ed5eafba74ec14886735ea2cd79768d72c688d97fc1a49d8f5b73fce" => :catalina
-    sha256 "541d3f5c8c8059dade3f91871f71c97c9ceff2987e97c95f4fefb57a8b55fc44" => :mojave
-    sha256 "402e30be30bc720b3bc8249da0ce56e7378f6e6f62ea68ddae27d558e438bca7" => :high_sierra
-    sha256 "c3fea7a5246d365ef2d4466b0722102afaf39a362b5127ffbe084de03b7afcf0" => :sierra
+    sha256 "e79ddc6fe5d42ee6254d92868da71fefc84b3c65130ee84304f9cc73ae119b4f" => :big_sur
+    sha256 "c03be273031ac22f8d407cbd903ba2913c81f058ad72d23f392289d3c7f9d7f6" => :catalina
+    sha256 "7d5f50dd790784f12c447570d9f905646cb92cfb7ce88bc0dea32386e26ed6a3" => :mojave
   end
 
-  conflicts_with "multimarkdown", :because => "both install `mmd` binaries"
+  conflicts_with "multimarkdown", because: "both install `mmd` binaries"
+
+  # 4.0.25 doesn't include the proper osx locale headers.
+  patch :DATA
 
   def install
-    # Prevents errors such as "mainloop.c:89:15: error: expected ')'"
-    # Upstream issue https://lists.gnu.org/archive/html/info-mtools/2014-02/msg00000.html
-    if ENV.cc == "clang"
-      inreplace "sysincludes.h",
-        "#  define UNUSED(x) x __attribute__ ((unused));x",
-        "#  define UNUSED(x) x"
-    end
-
     args = %W[
       LIBS=-liconv
       --disable-debug
@@ -42,3 +41,19 @@ class Mtools < Formula
     assert_match /#{version}/, shell_output("#{bin}/mtools --version")
   end
 end
+
+__END__
+diff --git a/sysincludes.h b/sysincludes.h
+index 056218e..ba3677b 100644
+--- a/sysincludes.h
++++ b/sysincludes.h
+@@ -279,6 +279,8 @@ extern int errno;
+ #include <pwd.h>
+ #endif
+ 
++#include <xlocale.h>
++#include <strings.h>
+ 
+ #ifdef HAVE_STRING_H
+ # include <string.h>
+

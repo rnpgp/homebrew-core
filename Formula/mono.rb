@@ -1,19 +1,30 @@
 class Mono < Formula
   desc "Cross platform, open source .NET development framework"
   homepage "https://www.mono-project.com/"
-  url "https://download.mono-project.com/sources/mono/mono-6.8.0.96.tar.xz"
-  sha256 "ed5df4ec663a4e228e89e910e954fa18d33f72e790c11174e1b62fc8cca90ba0"
+  url "https://download.mono-project.com/sources/mono/mono-6.12.0.90.tar.xz"
+  sha256 "51de5c02ad511333f93ff585bca54c8784de35af4ff27b759d16b46c4402cdac"
+  license "MIT"
+
+  livecheck do
+    url "https://www.mono-project.com/download/stable/"
+    regex(/href=.*?(\d+(?:\.\d+)+)[._-]macos/i)
+  end
 
   bottle do
-    sha256 "5b2b7d9251e9e62d34937ec644027b1c547d0ea69a0ad9193bcacca2e0998287" => :catalina
-    sha256 "901011c871a020815fd2b3606ef0b244cf1377c7fb8c7552f5ae943f54a7d456" => :mojave
-    sha256 "a07642c87448e55473d2de990d919f35b1be23032a7011de3c72f0f01574ea6a" => :high_sierra
+    sha256 "421985d8fc075fd12f11d239f7fc68be0408ce38b6299d79975a14964a60e40c" => :catalina
+    sha256 "9ef2de479c2863279aa87021129032a4f558956dbbececeecd9db33222d052ba" => :mojave
+    sha256 "8d3e8499fd5c23a353e3571da084d789943c72d804f39ae90bb07ffd37777bbf" => :high_sierra
   end
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
+  depends_on "python@3.9"
 
-  conflicts_with "xsd", :because => "both install `xsd` binaries"
+  uses_from_macos "unzip" => :build
+
+  conflicts_with "xsd", because: "both install `xsd` binaries"
+  conflicts_with cask: "mono-mdk"
+  conflicts_with cask: "mono-mdk-for-visual-studio"
 
   # xbuild requires the .exe files inside the runtime directories to
   # be executable
@@ -28,15 +39,15 @@ class Mono < Formula
 
   resource "fsharp" do
     url "https://github.com/fsharp/fsharp.git",
-        :tag      => "10.2.3",
-        :revision => "e31bc96e8a5e5742af1c6c45d55d5cc06bb524cb"
+        tag:      "10.2.3",
+        revision: "e31bc96e8a5e5742af1c6c45d55d5cc06bb524cb"
   end
 
   # When upgrading Mono, make sure to use the revision from
   # https://github.com/mono/mono/blob/mono-#{version}/packaging/MacSDK/msbuild.py
   resource "msbuild" do
     url "https://github.com/mono/msbuild.git",
-        :revision => "ad9c9926a76e3db0d2b878a24d44446d73640d19"
+        revision: "ad9c9926a76e3db0d2b878a24d44446d73640d19"
   end
 
   def install
@@ -54,7 +65,8 @@ class Mono < Formula
 
     # Next build msbuild
     resource("msbuild").stage do
-      system "./eng/cibuild_bootstrapped_msbuild.sh", "--host_type", "mono", "--configuration", "Release", "--skip_tests"
+      system "./eng/cibuild_bootstrapped_msbuild.sh", "--host_type", "mono",
+             "--configuration", "Release", "--skip_tests"
       system "./artifacts/mono-msbuild/msbuild", "mono/build/install.proj",
              "/p:MonoInstallPrefix=#{prefix}", "/p:Configuration=Release-MONO",
              "/p:IgnoreDiffFailure=true"
@@ -68,10 +80,11 @@ class Mono < Formula
     end
   end
 
-  def caveats; <<~EOS
-    To use the assemblies from other formulae you need to set:
-      export MONO_GAC_PREFIX="#{HOMEBREW_PREFIX}"
-  EOS
+  def caveats
+    <<~EOS
+      To use the assemblies from other formulae you need to set:
+        export MONO_GAC_PREFIX="#{HOMEBREW_PREFIX}"
+    EOS
   end
 
   test do

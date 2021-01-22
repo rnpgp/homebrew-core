@@ -1,21 +1,23 @@
 class Vale < Formula
   desc "Syntax-aware linter for prose"
   homepage "https://errata-ai.github.io/vale/"
-  url "https://github.com/errata-ai/vale/archive/v1.7.1.tar.gz"
-  sha256 "e1fee20d8fed7fc8819de310608b1ed584c0fad096cce95ecef727584ed9790f"
+  url "https://github.com/errata-ai/vale/archive/v2.8.1.tar.gz"
+  sha256 "2d8575fc2ad64feba22b2f3befe94494d4019a80b5a0c0cf652d48858be60147"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "55d0d445b8a784ed4b3b4a3984607b47a7de9e08f965023eff3b9e4729be3d91" => :catalina
-    sha256 "76f9d344221f5121ac43b32874a303ecd2bb935bcb8d26ef39f8754046c46e3a" => :mojave
-    sha256 "7aef1f869c6f7d757897a106d22416741489f38b108c49e1c2347392b8bac045" => :high_sierra
+    sha256 "745913cb2e9da1038db2a46881747f00258cd28179cd627d04648bf589cf5c76" => :big_sur
+    sha256 "51c249ac9681064a91896cd3a460d4e69304e1c10bfbb9e0a7874f1c5a2d5fc7" => :arm64_big_sur
+    sha256 "32c61a7b5564ccfe8d23c78323b1f4f9f15d3cbbcd059620fba717955e2dc5d3" => :catalina
+    sha256 "1b6e648f69ff63f232e2bb1a4288c256f29daa5b455304de1110ed3ca5531f03" => :mojave
   end
 
   depends_on "go" => :build
 
   def install
-    flags = "-X main.version=#{version} -s -w"
-    system "go", "build", "-ldflags=#{flags}", "-o", "#{bin}/#{name}"
+    ldflags = "-X main.version=#{version} -s -w"
+    system "go", "build", *std_go_args, "-ldflags=#{ldflags}", "./cmd/vale"
   end
 
   test do
@@ -37,6 +39,6 @@ class Vale < Formula
     (testpath/"document.md").write("# heading is not capitalized")
 
     output = shell_output("#{bin}/vale --config=#{testpath}/vale.ini #{testpath}/document.md 2>&1")
-    assert_match("✖ 0 errors, 1 warning and 0 suggestions in 1 file.", output)
+    assert_match(/✖ .*0 errors.*, .*1 warning.* and .*0 suggestions.* in 1 file\./, output)
   end
 end

@@ -4,7 +4,7 @@ class Ctags < Formula
   revision 1
 
   stable do
-    url "https://downloads.sourceforge.net/ctags/ctags-5.8.tar.gz"
+    url "https://downloads.sourceforge.net/project/ctags/ctags/5.8/ctags-5.8.tar.gz"
     sha256 "0e44b45dcabe969e0bbbb11e30c246f81abe5d32012db37395eb57d66e9e99c7"
 
     # also fixes https://sourceforge.net/p/ctags/bugs/312/
@@ -15,9 +15,16 @@ class Ctags < Formula
     end
   end
 
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/ctags[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
+
   bottle do
     cellar :any_skip_relocation
     rebuild 2
+    sha256 "d874d12982113ff0cc79501241b6c5f0caa16ae73821be66a49e246c257ccee5" => :big_sur
+    sha256 "d78b7f55870960eb32371500da37e1b74f3d67f63e4b9e3e7fba2040f68f5743" => :arm64_big_sur
     sha256 "0f9bebdadd76a7ec818b904d6266eae183e869bf6f83302d836b93fc50a03714" => :catalina
     sha256 "da05bcfc8536c7e627dbea17e67997b45388706ba9bb84e521682c0358cf18b5" => :mojave
     sha256 "169b9d458f2db04d609c86c36e9d9dd4ee2474b7c472a1a11c766454e4bba1a4" => :high_sierra

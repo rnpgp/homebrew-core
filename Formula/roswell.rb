@@ -1,18 +1,22 @@
 class Roswell < Formula
   desc "Lisp installer and launcher for major environments"
   homepage "https://github.com/roswell/roswell"
-  url "https://github.com/roswell/roswell/archive/v19.12.13.103.tar.gz"
-  sha256 "419bc4dd83c693cf9a19603ff1245186c9f76d4e057bdfd741987fd6ac620730"
+  url "https://github.com/roswell/roswell/archive/v20.06.14.107.tar.gz"
+  sha256 "fc3fd46c55a50e2b76aba60ebbfeab393f345cdca7f2a87a6772c8b4fce3c2e4"
+  license "MIT"
   head "https://github.com/roswell/roswell.git"
 
   bottle do
-    sha256 "f6987b7b0d0570fbd3ff47ba08d73d4c4c94b1673b07fe207ac0920fd0c36584" => :catalina
-    sha256 "bafa194c7c9b4c15459360fb6f4e8b98288144841a988af90cdca1ff3c17841e" => :mojave
-    sha256 "c2f9daad6c90d52c45eae23c3dc2f15501d2ecab2767565b4a07d7cc1462929e" => :high_sierra
+    sha256 "0ebfd2486d641e65b51886a2d094a102d7fe5e1a9167382e65f7467bde4f7a9a" => :big_sur
+    sha256 "dcd9cf15c21d13724f36fd736529faba40dc0c2af2008c970b94049796d6d171" => :catalina
+    sha256 "2d28ef4f1a1cbf94fba0132f7e1f05abb87854af6ce65f70c71877c7152d5622" => :mojave
+    sha256 "a6d5d3ddafc4afefbb84d077b2157a1e7101c5c057bc7fe25714c19b83659017" => :high_sierra
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
+
+  uses_from_macos "curl"
 
   def install
     system "./bootstrap"

@@ -1,32 +1,47 @@
 class Cgns < Formula
   desc "CFD General Notation System"
   homepage "http://cgns.org/"
-  url "https://github.com/CGNS/CGNS/archive/v3.4.0.tar.gz"
-  sha256 "6372196caf25b27d38cf6f056258cb0bdd45757f49d9c59372b6dbbddb1e05da"
+  url "https://github.com/CGNS/CGNS/archive/v4.1.2.tar.gz"
+  sha256 "951653956f509b8a64040f1440c77f5ee0e6e2bf0a9eef1248d370f60a400050"
+  license "BSD-3-Clause"
+  head "https://github.com/CGNS/CGNS.git"
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
-    sha256 "0ca1705629f5c38e41c5ad47f5855f970c57d146562d869f31d549cf2d2bf56f" => :catalina
-    sha256 "4cc212cbc9216a3611418f406c3e83d5285d8cb42585bff92305c3e8fc75874a" => :mojave
-    sha256 "57ab3d97cbc7267236e557e310c2232028dfd3980716e04ee25dc59673a2031a" => :high_sierra
+    cellar :any
+    sha256 "e2e5eb665f0f5c94c7782f0aed3708124705792ff5a7adf945a537369db6d724" => :big_sur
+    sha256 "abc3326bddbf58509b5ffb3834d68836ad803abf83f9958ae6a012870e7e9f85" => :arm64_big_sur
+    sha256 "4371c695cad1aa0bccbaaf0deccb9a8f5ddf7271dcbbddf6307b8d0bc254cec5" => :catalina
+    sha256 "d9904ca7c839a5d0421b99ba784e98fec047971de47efa5d3cc00725cd892e26" => :mojave
+    sha256 "8bfeb33c22f79c998b31fea6aafc60aecf2edf18ea754799c67c012d90555ec9" => :high_sierra
   end
 
   depends_on "cmake" => :build
   depends_on "gcc"
   depends_on "hdf5"
   depends_on "szip"
+
   uses_from_macos "zlib"
 
   def install
-    args = std_cmake_args
-    args << "-DCGNS_ENABLE_64BIT=YES" if Hardware::CPU.is_64_bit?
-    args << "-DCGNS_ENABLE_FORTRAN=YES"
-    args << "-DCGNS_ENABLE_HDF5=YES"
+    args = std_cmake_args + %w[
+      -DCGNS_ENABLE_64BIT=YES
+      -DCGNS_ENABLE_FORTRAN=YES
+      -DCGNS_ENABLE_HDF5=YES
+    ]
 
     mkdir "build" do
       system "cmake", "..", *args
       system "make"
       system "make", "install"
     end
+
+    # Avoid references to Homebrew shims
+    inreplace include/"cgnsBuild.defs", HOMEBREW_LIBRARY/"Homebrew/shims/mac/super/clang", "/usr/bin/clang"
   end
 
   test do
@@ -38,11 +53,10 @@ class Cgns < Formula
         int filetype = CG_FILE_NONE;
         if (cg_is_cgns(argv[0], &filetype) != CG_ERROR)
           return 1;
-        printf(\"%d.%d.%d\\n\",CGNS_VERSION/1000,(CGNS_VERSION/100)%10,(CGNS_VERSION/10)%10);
         return 0;
       }
     EOS
     system Formula["hdf5"].opt_prefix/"bin/h5cc", testpath/"test.c", "-L#{opt_lib}", "-lcgns"
-    assert_match(/#{version}/, shell_output("./a.out"))
+    system "./a.out"
   end
 end

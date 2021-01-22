@@ -1,47 +1,65 @@
 class Monetdb < Formula
   desc "Column-store database"
   homepage "https://www.monetdb.org/"
-  url "https://www.monetdb.org/downloads/sources/Nov2019-SP1/MonetDB-11.35.9.tar.xz"
-  sha256 "7f5b430ef50012cf0db8e5b311d7199978c414d746d1db4e69884e74a86784b0"
+  url "https://www.monetdb.org/downloads/sources/Oct2020-SP1/MonetDB-11.39.7.tar.xz"
+  sha256 "0f0dbcc81232107b5b51efb454b0497ff18438460ae6a67f06bb6e30afd3e706"
+  license "MPL-2.0"
+  head "https://dev.monetdb.org/hg/MonetDB", using: :hg
 
   bottle do
-    sha256 "3bcbeee039e42de83c8a638df02c0994ccff6c41a5168e6fa5e47dc25d90f09b" => :catalina
-    sha256 "12aa7f193f7878b727049bf51a921bf268d0e047dd6ea4256aec708f39fbeb02" => :mojave
-    sha256 "272ebf3b3be32e5220c8f155313471da206d3ba681d572026d3fb5dd410e8ada" => :high_sierra
+    rebuild 1
+    sha256 "08c0956fec0f0d652ae61d8782d1215fffc2192f125af549d69838a598b38269" => :big_sur
+    sha256 "0a000ce26a0f8df4b6561581bd958f786d1366dd21eaea588f9b26c6ef8f2af5" => :arm64_big_sur
+    sha256 "0411fad3516ead405af6b5e22b9ca765dbb45d9feebb8a5f5adf5c26dc3681c8" => :catalina
+    sha256 "89ee034ef0320a9232b8ed10952711163744fe5a199ee1ce20a4bf34c87e17d3" => :mojave
   end
 
-  head do
-    url "https://dev.monetdb.org/hg/MonetDB", :using => :hg
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "bison" => :build
-    depends_on "gettext" => :build
-    depends_on "libtool" => :build
-  end
-
-  depends_on "libatomic_ops" => :build
+  depends_on "bison" => :build  # macOS bison is too old
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
+  depends_on "python@3.9" => :build
+  depends_on "lz4"
   depends_on "openssl@1.1"
   depends_on "pcre"
   depends_on "readline" # Compilation fails with libedit
+  depends_on "xz"
 
   def install
-    ENV["M4DIRS"] = "#{Formula["gettext"].opt_share}/aclocal" if build.head?
-    system "./bootstrap" if build.head?
-
-    system "./configure", "--prefix=#{prefix}",
-                          "--enable-assert=no",
-                          "--enable-debug=no",
-                          "--enable-optimize=yes",
-                          "--enable-testing=no",
-                          "--with-readline=#{Formula["readline"].opt_prefix}",
-                          "--disable-rintegration"
-    system "make"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args,
+                      "-DRELEASE_VERSION=ON",
+                      "-DASSERT=OFF",
+                      "-DSTRICT=OFF",
+                      "-DTESTING=OFF",
+                      "-DFITS=OFF",
+                      "-DGEOM=OFF",
+                      "-DNETCDF=OFF",
+                      "-DODBC=OFF",
+                      "-DPY3INTEGRATION=OFF",
+                      "-DRINTEGRATION=OFF",
+                      "-DSHP=OFF",
+                      "-DWITH_BZ2=ON",
+                      "-DWITH_CMOCKA=OFF",
+                      "-DWITH_CURL=ON",
+                      "-DWITH_LZ4=ON",
+                      "-DWITH_LZMA=ON",
+                      "-DWITH_PCRE=ON",
+                      "-DWITH_PROJ=OFF",
+                      "-DWITH_SNAPPY=OFF",
+                      "-DWITH_XML2=ON",
+                      "-DWITH_ZLIB=ON",
+                      "-DOPENSSL_ROOT_DIR=#{Formula["openssl@1.1"].opt_prefix}",
+                      "-DREADLINE_ROOT=#{Formula["readline"].opt_prefix}"
+      # remove reference to shims directory from compilation/linking info
+      inreplace "tools/mserver/monet_version.c", %r{"/[^ ]*/}, "\""
+      system "cmake", "--build", "."
+      system "cmake", "--build", ".", "--target", "install"
+    end
   end
 
   test do
-    assert_match "Usage", shell_output("#{bin}/mclient --help 2>&1")
+    # assert_match "Usage", shell_output("#{bin}/mclient --help 2>&1")
+    system("#{bin}/monetdbd", "create", "#{testpath}/dbfarm")
+    assert_predicate testpath/"dbfarm", :exist?
   end
 end

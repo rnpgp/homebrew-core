@@ -1,14 +1,21 @@
 class Xmrig < Formula
   desc "Monero (XMR) CPU miner"
   homepage "https://github.com/xmrig/xmrig"
-  url "https://github.com/xmrig/xmrig/archive/v5.5.1.tar.gz"
-  sha256 "21e7590c629389d76e15867dff7dc4d1e0952a6ceb0f28a1d5920f9c51703c91"
+  url "https://github.com/xmrig/xmrig/archive/v6.7.2.tar.gz"
+  sha256 "c843f6639a05893fd02c81319542c919e39871496c52c366f1cad879fb5393ec"
+  license "GPL-3.0-or-later"
   head "https://github.com/xmrig/xmrig.git"
 
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
+
   bottle do
-    sha256 "11edbcb6d4cd5a02f79a30ca63e4dc9e27e28480ba54dd849e309bbe92e60de7" => :catalina
-    sha256 "fdf08f2cb456c79a16a3ec7c4de5536aa0843a64779c7ba26760a91f144891b4" => :mojave
-    sha256 "6244ef72b2584ab0f6beb4d8d9ec171326972ae65f6d218b596deb022bbfc75f" => :high_sierra
+    sha256 "6fe5b3f3b7807d8023b59ba47cd4cf85b0ee836147836ab426afec096d8e9038" => :big_sur
+    sha256 "a7663915cbb11b5183adbc05f4bb41b480c05b8a4df3f98d544b71e4a732642c" => :arm64_big_sur
+    sha256 "32fbe179c02c8bb10a71edaef8e44d2abc1467e4f393922f061bf7bc5eb52a8a" => :catalina
+    sha256 "867c9c1f923808315f230f127def37b27affb3cc0018c7ab1c4d93e453d7d073" => :mojave
   end
 
   depends_on "cmake" => :build
@@ -34,12 +41,12 @@ class Xmrig < Formula
       read, write = IO.pipe
       pid = fork do
         exec "#{bin}/xmrig", "--no-color", "--max-cpu-usage=1", "--print-time=1",
-             "--threads=1", "--retries=1", "--url=#{test_server}", :out => write
+             "--threads=1", "--retries=1", "--url=#{test_server}", out: write
       end
       start_time=Time.now
       loop do
         assert (Time.now - start_time <= timeout), "No server connect after timeout"
-        break if read.gets.include? "\] \[#{test_server}\] DNS error: \"unknown node or service\""
+        break if read.gets.include? "#{test_server} DNS error: \"unknown node or service\""
       end
     ensure
       Process.kill("SIGINT", pid)

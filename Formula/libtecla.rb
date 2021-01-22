@@ -1,11 +1,12 @@
 class Libtecla < Formula
   desc "Command-line editing facilities similar to the tcsh shell"
-  homepage "http://www.astro.caltech.edu/~mcs/tecla/index.html"
-  url "http://www.astro.caltech.edu/~mcs/tecla/libtecla-1.6.3.tar.gz"
+  homepage "https://www.astro.caltech.edu/~mcs/tecla/index.html"
+  url "https://www.astro.caltech.edu/~mcs/tecla/libtecla-1.6.3.tar.gz"
   sha256 "f2757cc55040859fcf8f59a0b7b26e0184a22bece44ed9568a4534a478c1ee1a"
 
   bottle do
     cellar :any
+    sha256 "d0f28c06cf9d2d1669298104439c4e194d21df65fc17e9b95e9dec0383aa7fef" => :big_sur
     sha256 "a6bbfa1cee4b62a03186d6fa1a153fceb2b3b9ae5cdf63411d6432c6251c753b" => :catalina
     sha256 "d39e8711f7a9a5a11433c7c92a2113a97f8846796f93fa7bca1281e06db2e3fe" => :mojave
     sha256 "dffae78362e21bf324ed651a2b80ff924b1bbec60916159863e66c7171072a9c" => :high_sierra
@@ -14,6 +15,8 @@ class Libtecla < Formula
     sha256 "836d6100343197540f079ea7f6b9e5641fd8efc4e331d3492f8be4cd41ced6e9" => :yosemite
     sha256 "d7f9b95bbe7540504751d42589e8500a77d15dc3e6b2f7fe501ed872172f1129" => :mavericks
   end
+
+  uses_from_macos "ncurses"
 
   def install
     ENV.deparallelize

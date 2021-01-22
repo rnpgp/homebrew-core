@@ -1,23 +1,37 @@
 class Libxmlxx3 < Formula
   desc "C++ wrapper for libxml"
   homepage "https://libxmlplusplus.sourceforge.io/"
-  url "https://download.gnome.org/sources/libxml++/3.2/libxml++-3.2.0.tar.xz"
-  sha256 "b786fae7fd7820d356698069a787d107995c3efcbef50d8f4efd3766ab768e4f"
+  url "https://download.gnome.org/sources/libxml++/3.2/libxml++-3.2.2.tar.xz"
+  sha256 "a53d0af2c9bf566b4d5d57d1c6495b189555c54785941d7e3bef666728952f0b"
+  license "LGPL-2.1-or-later"
+  revision 1
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "583c5345ed243a5cea2bbf82e71a130e85554110ebe3927183171c66225a7c26" => :catalina
-    sha256 "054180f67aa9d297a26c40fc9e6dcc27bf68e78f09db895b3821c68751eabae2" => :mojave
-    sha256 "2da0d0f6e732f910e75e5b20c19a01056854d00feab6e1c2490b7722bbc1af29" => :high_sierra
+    sha256 "7c1c805e82abcb022693b2c406cdb315b722a82bf510f0b6fbf65a04bb5be4d5" => :big_sur
+    sha256 "3dc301c85f0b5f9da58de539e50df1b9f22e7fa8d7840f498bfdb4b118dfe4e9" => :arm64_big_sur
+    sha256 "ec019c33706d717ab23eb6666fb7a99984b12928bb7c12f65d97e8804b0e5021" => :catalina
+    sha256 "a4785f6c1dfdc802e564d637a3be7047dca1cdc24bf680ca4ab4130921812d3a" => :mojave
   end
 
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "glibmm"
+  depends_on "glibmm@2.64"
+
+  uses_from_macos "libxml2"
 
   def install
     ENV.cxx11
-    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, ".."
+      system "ninja"
+      system "ninja", "install"
+    end
   end
 
   test do
@@ -35,7 +49,7 @@ class Libxmlxx3 < Formula
     ENV.libxml2
     gettext = Formula["gettext"]
     glib = Formula["glib"]
-    glibmm = Formula["glibmm"]
+    glibmm = Formula["glibmm@2.64"]
     libsigcxx = Formula["libsigc++@2"]
     flags = %W[
       -I#{gettext.opt_include}
@@ -55,11 +69,13 @@ class Libxmlxx3 < Formula
       -lglib-2.0
       -lglibmm-2.4
       -lgobject-2.0
-      -lintl
       -lsigc-2.0
       -lxml++-3.0
       -lxml2
     ]
+    on_macos do
+      flags << "-lintl"
+    end
     system ENV.cxx, "-std=c++11", "test.cpp", "-o", "test", *flags
     system "./test"
   end

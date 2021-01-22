@@ -14,18 +14,22 @@ class HardlinkOsx < Formula
     sha256 "2ebdf76a67f7c63614d581963d92d79de15cf834b7e3857c139f474db71aab73" => :mavericks
   end
 
+  # https://github.com/selkhateeb/hardlink/issues/31
+  disable! date: "2020-12-21", because: "doesn't work under APFS, using on HFS+ can cause data loss after conversion"
+
   def install
     system "make"
     bin.mkdir
     system "make", "install", "PREFIX=#{prefix}"
   end
 
-  def caveats; <<~EOS
-    Hardlinks can not be created under the same directory root. If you try to
-    `hln source directory` to target directory under the same root you will get an error!
+  def caveats
+    <<~EOS
+      Hardlinks can not be created under the same directory root. If you try to
+      `hln source directory` to target directory under the same root you will get an error!
 
-    Also, remember the binary is named `hln` due to a naming conflict.
-  EOS
+      Also, remember the binary is named `hln` due to a naming conflict.
+    EOS
   end
 
   test do

@@ -7,6 +7,7 @@ class Vimpager < Formula
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "9ead831c50c50e1b95b18695737936bc907c9241867d3700c87120c8af09aea7" => :big_sur
     sha256 "f4ec02de4d30af041e98f3ab4ce6344424f7a8f5bfeca6cf21dc179cbd6e576a" => :mojave
     sha256 "73aaa39c9876664b2f0b0a98dea30ea34e05504f28d607276873345d57b97834" => :high_sierra
     sha256 "308c68e761983beb317bbefcba285022dbc74a66486a3da7e2ac8bc929649a3a" => :sierra
@@ -22,10 +23,11 @@ class Vimpager < Formula
     system "make", "docs"
   end
 
-  def caveats; <<~EOS
-    To use vimpager as your default pager, add `export PAGER=vimpager` to your
-    shell configuration.
-  EOS
+  def caveats
+    <<~EOS
+      To use vimpager as your default pager, add `export PAGER=vimpager` to your
+      shell configuration.
+    EOS
   end
 
   test do

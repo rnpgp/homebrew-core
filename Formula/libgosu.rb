@@ -1,16 +1,17 @@
 class Libgosu < Formula
   desc "2D game development library"
   homepage "https://libgosu.org"
-  url "https://github.com/gosu/gosu/archive/v0.14.5.tar.gz"
-  sha256 "4dbc4998e2c630ee7758544de4286c70c68e639524b6088ccdc7b5487c928695"
+  url "https://github.com/gosu/gosu/archive/v1.0.0.tar.gz"
+  sha256 "0b3f6ff095808fc1dbfc8513676737dc2cf99a8570013873eaab64499b543331"
+  license "MIT"
   head "https://github.com/gosu/gosu.git"
 
   bottle do
     cellar :any
-    sha256 "6c58505f2ae9d4cd75d5248bbbf8c5b89d7c98b7fa2dc57f96e460cec7a0e9db" => :catalina
-    sha256 "d2b121b69379f97ef3fc413970b1bd4355c049703342b66fb661ebce4cc6aa75" => :mojave
-    sha256 "9aade349ed7409b4a8409f69d8a21b9b3c994095c4762e347783d9fd92b287ff" => :high_sierra
-    sha256 "6e3ceaff76704fa5095d2d6a9f4306a566909da22d52bf2a0d49bd847d638f5e" => :sierra
+    sha256 "d6afbd6af6184ff1e51f4dbe580ff8f19f11235d8dde4f9834951f4079070831" => :big_sur
+    sha256 "b6a28109e1504d9640bd25b4e76112c873b00e72c319c66aa32c8a44851fd72f" => :arm64_big_sur
+    sha256 "bfdc72d6d978814a4ef914605de1b0969c7d3ca62fb98b035c3be0120a9cf168" => :catalina
+    sha256 "442d1168c40e34104c445df179e9482d1d03a359d5cc7676f589ce3d42289093" => :mojave
   end
 
   depends_on "cmake" => :build
@@ -19,7 +20,7 @@ class Libgosu < Formula
 
   def install
     mkdir "build" do
-      system "cmake", "../cmake", *std_cmake_args
+      system "cmake", "..", *std_cmake_args
       system "make", "install"
     end
   end

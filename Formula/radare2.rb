@@ -1,14 +1,17 @@
 class Radare2 < Formula
   desc "Reverse engineering framework"
   homepage "https://radare.org"
-  url "https://github.com/radareorg/radare2/archive/4.1.1.tar.gz"
-  sha256 "b62472601cdd20356b838d6f91738159e30ac1d7b4d0c0cb158575b1ef969e69"
-  head "https://github.com/radare/radare2.git"
+  url "https://github.com/radareorg/radare2/archive/5.0.0.tar.gz"
+  sha256 "517dd80ebd0569f31498887338eacb92e8cf054bc4625eef8ffe9ea174c1adae"
+  license "LGPL-3.0-only"
+  head "https://github.com/radareorg/radare2.git"
 
   bottle do
-    sha256 "b29b45ef814bb0366a485a6a592978ca7c3ca2831b4aee7a118fcc36dd8ee401" => :catalina
-    sha256 "4efc3612640857a3b5bb2b04aad16a586f43b1ec40bc7660824fac51cddc7fc6" => :mojave
-    sha256 "845264fd22164541914cbc22fbccd2cc416afc2b0c230784d073b0f00b33a477" => :high_sierra
+    rebuild 1
+    sha256 "cb89eeb473aaf506f0a1a0ef5de94d27ce9051dc25a307807e58b81f6ff77def" => :big_sur
+    sha256 "806bf4d9bdd9714586cee4a32efb3cf75c735b7329a05e34fa79aa6cce1ee17f" => :arm64_big_sur
+    sha256 "2e7491f612ffa9161ed34670cf345f52998b39a99cbe6c7fb3f660e2ac02e592" => :catalina
+    sha256 "d40bc7db7d6a8e16bc41aa3db7e622bf324e99af7283501c595140aaeacbe286" => :mojave
   end
 
   def install

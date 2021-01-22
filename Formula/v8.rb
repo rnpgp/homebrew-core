@@ -2,57 +2,69 @@ class V8 < Formula
   desc "Google's JavaScript engine"
   homepage "https://github.com/v8/v8/wiki"
   # Track V8 version from Chrome stable: https://omahaproxy.appspot.com
-  url "https://github.com/v8/v8/archive/7.9.317.31.tar.gz"
-  sha256 "a11c1a4350ed521993e83846da61a8c1e563204a6d8c7b28cb0b4f0fba420fe5"
+  url "https://github.com/v8/v8/archive/8.8.278.14.tar.gz"
+  sha256 "3540d27967ea92847035219e20ea065096457d04120d6a6a591f6b2466e158e2"
+  license "BSD-3-Clause"
+
+  livecheck do
+    url "https://omahaproxy.appspot.com/all.json?os=mac&channel=stable"
+    regex(/"v8_version": "v?(\d+(?:\.\d+)+)"/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "947bb61e4e4b37aebf2a9d59ba0c5576dccf6f8a858b5d497802c44afc2c4aa7" => :catalina
-    sha256 "a21c741c2abc96acd78469c7f4f7fc1a81ba12a9a58d077e8516e64347a528c1" => :mojave
-    sha256 "428089c53157f8a24a1231264a15dfc408aa7d437b5a81ec64445a1259029f84" => :high_sierra
+    sha256 "6a93c0cdde990b8ccc81dcac74d936d4f8abbcb785d42cce47329e2b1edc27e5" => :big_sur
+    sha256 "aca338538a55767ec4e238bdcaf7839195582d2d66624c43c2b3adcf894a1997" => :arm64_big_sur
+    sha256 "d5dc46eda52a3cbc4e08a1328fddac87adb78699b75651009a906784b3c12f6c" => :catalina
+    sha256 "d3c63e6c7a43fca28fbbcdcf6d4d4822026ef48e1a272cf951493863a6b218cd" => :mojave
   end
 
-  depends_on "llvm" => :build if DevelopmentTools.clang_build_version < 1100
+  depends_on "llvm" => :build if DevelopmentTools.clang_build_version < 1200 || Hardware::CPU.arm?
   depends_on "ninja" => :build
 
-  depends_on :xcode => ["10.0", :build] # required by v8
+  depends_on xcode: ["10.0", :build] # required by v8
 
   # Look up the correct resource revisions in the DEP file of the specific releases tag
-  # e.g. for CIPD dependency gn: https://github.com/v8/v8/blob/7.6.303.27/DEPS#L15
+  # e.g. for CIPD dependency gn: https://github.com/v8/v8/blob/8.7.220.29/DEPS#L44
   resource "gn" do
     url "https://gn.googlesource.com/gn.git",
-      :revision => "ad9e442d92dcd9ee73a557428cfc336b55cbd533"
+        revision: "53d92014bf94c3893886470a1c7c1289f8818db0"
   end
 
-  # e.g.: https://github.com/v8/v8/blob/7.6.303.27/DEPS#L60 for the revision of build for v8 7.6.303.27
+  # e.g.: https://github.com/v8/v8/blob/8.7.220.29/DEPS#L85 for the revision of build for v8 8.7.220.29
   resource "v8/build" do
     url "https://chromium.googlesource.com/chromium/src/build.git",
-      :revision => "082f11b29976c3be67dddd74bd75c6d1793201c7"
+        revision: "2101eff1ac4bfd25f2dfa71ad632a600a38c1ed9"
   end
 
   resource "v8/third_party/icu" do
     url "https://chromium.googlesource.com/chromium/deps/icu.git",
-      :revision => "5005010d694e16571b8dfbf07d70817841f80a69"
+        revision: "c2a4cae149aae7fd30c4cbe3cf1b30df03b386f1"
   end
 
   resource "v8/base/trace_event/common" do
     url "https://chromium.googlesource.com/chromium/src/base/trace_event/common.git",
-      :revision => "5e4fce17a9d2439c44a7b57ceecef6df9287ec2f"
+        revision: "eb94f1c7aa96207f469008f29989a43feb2718f8"
   end
 
   resource "v8/third_party/googletest/src" do
     url "https://chromium.googlesource.com/external/github.com/google/googletest.git",
-      :revision => "f2fb48c3b3d79a75a88a99fba6576b25d42ec528"
+        revision: "4fe018038f87675c083d0cfb6a6b57c274fb1753"
   end
 
   resource "v8/third_party/jinja2" do
     url "https://chromium.googlesource.com/chromium/src/third_party/jinja2.git",
-      :revision => "b41863e42637544c2941b574c7877d3e1f663e25"
+        revision: "a82a4944a7f2496639f34a89c9923be5908b80aa"
   end
 
   resource "v8/third_party/markupsafe" do
     url "https://chromium.googlesource.com/chromium/src/third_party/markupsafe.git",
-      :revision => "8f45f5cfa0009d2a70589bcda0349b8cb2b72783"
+        revision: "0944e71f4b2cb9a871bcbe353f95e889b64a611a"
+  end
+
+  resource "v8/third_party/zlib" do
+    url "https://chromium.googlesource.com/chromium/src/third_party/zlib.git",
+        revision: "e84c9a3fd75fdc39055b7ae27d6ec508e50bd39e"
   end
 
   def install
@@ -62,6 +74,7 @@ class V8 < Formula
     (buildpath/"third_party/googletest/src").install resource("v8/third_party/googletest/src")
     (buildpath/"base/trace_event/common").install resource("v8/base/trace_event/common")
     (buildpath/"third_party/icu").install resource("v8/third_party/icu")
+    (buildpath/"third_party/zlib").install resource("v8/third_party/zlib")
 
     # Build gn from source and add it to the PATH
     (buildpath/"gn").install resource("gn")
@@ -71,20 +84,27 @@ class V8 < Formula
     end
     ENV.prepend_path "PATH", buildpath/"gn/out"
 
-    # Enter the v8 checkout
+    # create gclient_args.gni
+    (buildpath/"build/config/gclient_args.gni").write <<~EOS
+      declare_args() {
+        checkout_google_benchmark = false
+      }
+    EOS
+
+    # setup gn args
     gn_args = {
-      :is_debug                     => false,
-      :is_component_build           => true,
-      :v8_use_external_startup_data => false,
-      :v8_enable_i18n_support       => true,        # enables i18n support with icu
-      :clang_base_path              => "\"/usr/\"", # uses Apples system clang instead of Google's custom one
-      :clang_use_chrome_plugins     => false,       # disable the usage of Google's custom clang plugins
-      :use_custom_libcxx            => false,       # uses system libc++ instead of Google's custom one
-      :treat_warnings_as_errors     => false,
+      is_debug:                     false,
+      is_component_build:           true,
+      v8_use_external_startup_data: false,
+      v8_enable_i18n_support:       true, # enables i18n support with icu
+      clang_base_path:              "\"/usr/\"", # uses system clang instead of Google clang
+      clang_use_chrome_plugins:     false, # disable the usage of Google's custom clang plugins
+      use_custom_libcxx:            false, # uses system libc++ instead of Google's custom one
+      treat_warnings_as_errors:     false, # ignore not yet supported clang argument warnings
     }
 
-    # use clang from homebrew llvm formula on <= High Sierra, because the system clang is to old for V8
-    if DevelopmentTools.clang_build_version < 1100
+    # use clang from homebrew llvm formula for XCode 11- , because the system clang is too old for V8
+    if DevelopmentTools.clang_build_version < 1200 || Hardware::CPU.arm?
       ENV.remove "HOMEBREW_LIBRARY_PATHS", Formula["llvm"].opt_lib # but link against system libc++
       gn_args[:clang_base_path] = "\"#{Formula["llvm"].prefix}\""
     end
@@ -107,7 +127,7 @@ class V8 < Formula
     t = "#{bin}/d8 -e 'print(new Intl.DateTimeFormat(\"en-US\").format(new Date(\"2012-12-20T03:00:00\")));'"
     assert_match %r{12/\d{2}/2012}, shell_output(t).chomp
 
-    (testpath/"test.cpp").write <<~'EOS'
+    (testpath/"test.cpp").write <<~EOS
       #include <libplatform/libplatform.h>
       #include <v8.h>
       int main(){
@@ -119,7 +139,7 @@ class V8 < Formula
     EOS
 
     # link against installed libc++
-    system ENV.cxx, "-std=c++11", "test.cpp",
+    system ENV.cxx, "-std=c++14", "test.cpp",
       "-I#{libexec}/include",
       "-L#{libexec}", "-lv8", "-lv8_libplatform"
   end

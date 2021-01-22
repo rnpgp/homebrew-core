@@ -1,40 +1,34 @@
 class Skaffold < Formula
   desc "Easy and Repeatable Kubernetes Development"
-  homepage "https://github.com/GoogleContainerTools/skaffold"
+  homepage "https://skaffold.dev/"
   url "https://github.com/GoogleContainerTools/skaffold.git",
-      :tag      => "v1.2.0",
-      :revision => "80f82f42fe271aea1058f4a37776d52ab5a7c441"
+      tag:      "v1.17.2",
+      revision: "53e4063e12b41bc19c6cd3929d939f17ad2e88de"
+  license "Apache-2.0"
   head "https://github.com/GoogleContainerTools/skaffold.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e09c836eaf50d27ed9118210b6d05007e16f21212518f0dfc9fabc76da38c81f" => :catalina
-    sha256 "31babe4ec12ae83d21d6cb933bd7ef36912851cd220ceb7d25c94cf510c1f62d" => :mojave
-    sha256 "e27916fc9c60b514f8efefa194998253955da864e9b974acf0737e92c7727ca5" => :high_sierra
+    sha256 "3c3bed94b02b9ab1a8218db62154f69d779475e15a7961b1ae90870c7bbd395a" => :big_sur
+    sha256 "141dad75d334fadd92438a4e2417ab8f476025d64eca3c476d763cc741bb168d" => :arm64_big_sur
+    sha256 "cf1f406c9f1a6c0d16fcb87ce35f0c012f9e9ee0bf430e5fb321c8f60d42db7a" => :catalina
+    sha256 "80c54de785afe4a20bde82af3e2e1e4eefe932cd082ad3732a2c8123b9d6e3e9" => :mojave
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-    dir = buildpath/"src/github.com/GoogleContainerTools/skaffold"
-    dir.install buildpath.children - [buildpath/".brew_home"]
-    cd dir do
-      system "make"
-      bin.install "out/skaffold"
-
-      output = Utils.popen_read("#{bin}/skaffold completion bash")
-      (bash_completion/"skaffold").write output
-
-      output = Utils.popen_read("#{bin}/skaffold completion zsh")
-      (zsh_completion/"_skaffold").write output
-
-      prefix.install_metafiles
-    end
+    system "make"
+    bin.install "out/skaffold"
+    output = Utils.safe_popen_read("#{bin}/skaffold", "completion", "bash")
+    (bash_completion/"skaffold").write output
+    output = Utils.safe_popen_read("#{bin}/skaffold", "completion", "zsh")
+    (zsh_completion/"_skaffold").write output
   end
 
   test do
-    output = shell_output("#{bin}/skaffold version --output {{.GitTreeState}}")
-    assert_match "clean", output
+    (testpath/"Dockerfile").write "FROM scratch"
+    output = shell_output("#{bin}/skaffold init --analyze").chomp
+    assert_equal '{"dockerfiles":["Dockerfile"]}', output
   end
 end

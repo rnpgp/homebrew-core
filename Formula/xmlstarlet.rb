@@ -3,9 +3,16 @@ class Xmlstarlet < Formula
   homepage "https://xmlstar.sourceforge.io/"
   url "https://downloads.sourceforge.net/project/xmlstar/xmlstarlet/1.6.1/xmlstarlet-1.6.1.tar.gz"
   sha256 "15d838c4f3375332fd95554619179b69e4ec91418a3a5296e7c631b7ed19e7ca"
+  license "MIT"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "bc3baa847a617f3d67000ff14e96126f9bbdf54e916b6c693a2c8bf633ca0bfa" => :big_sur
+    sha256 "d654b90521d07ffc1304253fd2b927f9813effa5a65c3f6c43b67838077c009d" => :arm64_big_sur
     sha256 "2a679570811f553e345748516fa37c2d4b529a75533bdb73316077aaed5ab8f6" => :catalina
     sha256 "6e5d11ee1419a61a9f043663c1236d064ee692fd187ae15bf2114b42d8f0889e" => :mojave
     sha256 "56ce0e3190080e6e1111ebb31aa06aea53f16cde50359a356c24ff86a4df72b3" => :high_sierra
@@ -14,6 +21,8 @@ class Xmlstarlet < Formula
     sha256 "525eafe6cab96cc6e04fef756e25316119b3c96cb61e5f7f51770cd062ad1bec" => :yosemite
     sha256 "7004b98b4dd9195a35f736ba3f6282369a2c63397a710056c5d1ae71d149fa3a" => :mavericks
   end
+
+  uses_from_macos "libxslt"
 
   def install
     system "./configure", "--disable-dependency-tracking",

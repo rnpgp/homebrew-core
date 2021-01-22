@@ -1,17 +1,30 @@
 class IncludeWhatYouUse < Formula
   desc "Tool to analyze #includes in C and C++ source files"
   homepage "https://include-what-you-use.org/"
-  url "https://include-what-you-use.org/downloads/include-what-you-use-0.13.src.tar.gz"
-  sha256 "49294270aa64e8c04182369212cd919f3b3e0e47601b1f935f038c761c265bc9"
+  url "https://include-what-you-use.org/downloads/include-what-you-use-0.15.src.tar.gz"
+  sha256 "2bd6f2ae0d76e4a9412f468a5fa1af93d5f20bb66b9e7bf73479c31d789ac2e2"
+  license "NCSA"
+
+  # This omits the 3.3, 3.4, and 3.5 versions, which come from the older
+  # version scheme like `Clang+LLVM 3.5` (25 November 2014). The current
+  # versions are like: `include-what-you-use 0.15 (aka Clang+LLVM 11)`
+  # (21 November 2020).
+  livecheck do
+    url "https://include-what-you-use.org/downloads/"
+    regex(/href=.*?include-what-you-use[._-]v?((?!3\.[345])\d+(?:\.\d+)+)[._-]src\.t/i)
+  end
 
   bottle do
-    sha256 "94a1fa82e1a198f0e7548cb7b4895303b52432eb83836ce84896cc5af6bd3340" => :catalina
-    sha256 "0f91606b7d834d1969dea394674eafdd87c6ecbffb327a77c0d63c16574e89af" => :mojave
-    sha256 "b7dbc7e9f3504f1902b9f63de1c802812729c2ae395c4d85b0dab5a10835bd60" => :high_sierra
+    rebuild 1
+    sha256 "1bed2b82b945ee9b4734f94b3849b580815f42a810330ae59175621468fa39d8" => :big_sur
+    sha256 "98241b31fbe2a8b7634b75ab896e36c30dd6c3550e8adf789f9834838d972a0c" => :arm64_big_sur
+    sha256 "41834e9b7418fc7bbd93a33496ddd1f39e8e75ca9c0de0348d79506eba07c5b1" => :catalina
+    sha256 "42cc540a9dd70c2507253552d8cd67d103e7f9f083925e0c0f8cb9abd572f19c" => :mojave
   end
 
   depends_on "cmake" => :build
-  depends_on "llvm" # include-what-you-use 0.13 is compatible with llvm 9.0
+  depends_on "llvm" # include-what-you-use 0.15 is compatible with llvm 11.0
+
   uses_from_macos "ncurses"
   uses_from_macos "zlib"
 
@@ -23,6 +36,7 @@ class IncludeWhatYouUse < Formula
     args = std_cmake_args + %W[
       -DCMAKE_INSTALL_PREFIX=#{libexec}
       -DCMAKE_PREFIX_PATH=#{Formula["llvm"].opt_lib}
+      -DCMAKE_CXX_FLAGS=-std=gnu++14
     ]
 
     mkdir "build" do

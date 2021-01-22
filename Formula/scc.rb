@@ -1,14 +1,21 @@
 class Scc < Formula
   desc "Fast and accurate code counter with complexity and COCOMO estimates"
   homepage "https://github.com/boyter/scc/"
-  url "https://github.com/boyter/scc/archive/v2.11.0.tar.gz"
-  sha256 "04fbfebc92180a72413b68e4475fac590309a7f2fb365ea5105cc36301155300"
+  url "https://github.com/boyter/scc/archive/v2.13.0.tar.gz"
+  sha256 "11e2e44ef25ef848de1b380c94cb096ed77d3d590466c99c9f1b5c2dc99609c2"
+  license any_of: ["MIT", "Unlicense"]
+
+  livecheck do
+    url :homepage
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "c0c6ea4aa2c4fd242ee9081ab2dfcd9d76d2112eb46c40d59d7b7105d94fa770" => :catalina
-    sha256 "9c9fb5690b129a8b6cae194c7480f79cbf0e33942ac9e5e049d57265dd7928ca" => :mojave
-    sha256 "e92aaef6efd17c2356a0c82d38b7652279d6743f00495c793f17c66e9e2b8664" => :high_sierra
+    sha256 "66e94332b83430ce107eb5e529ca1a08b06adfed3ae258b35de391a2194a898d" => :big_sur
+    sha256 "798591b31f8fa70978615076a78cb7adc556d4fb63e6901052728ce47106d4bd" => :catalina
+    sha256 "76530a13d533fd2e54593a119e61f20796f746bfdceaebe01bc64b81e33eb308" => :mojave
+    sha256 "f10f5e6376c18ace0dc1d9fa9c4f6cb8bd21720a4e16378693d6fe36b80195ed" => :high_sierra
   end
 
   depends_on "go" => :build
@@ -27,6 +34,6 @@ class Scc < Formula
       }
     EOS
 
-    assert_match "C,test.c,test.c,4,4,0,0,0\n", shell_output("#{bin}/scc -fcsv test.c")
+    assert_match "C,test.c,test.c,4,4,0,0,0,50\n", shell_output("#{bin}/scc -fcsv test.c")
   end
 end

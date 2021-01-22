@@ -3,28 +3,36 @@ class Yamllint < Formula
 
   desc "Linter for YAML files"
   homepage "https://github.com/adrienverge/yamllint"
-  url "https://github.com/adrienverge/yamllint/archive/v1.20.0.tar.gz"
-  sha256 "6391bfd0f3d360a418fef54c6ccf77615c25b2b62c54fb770c07823471016b18"
+  url "https://files.pythonhosted.org/packages/75/33/c8014b6678936daf30e15291bfb9d608fff1d8adafa024a6565d225e6f4c/yamllint-1.25.0.tar.gz"
+  sha256 "b1549cbe5b47b6ba67bdeea31720f5c51431a4d0c076c1557952d841f7223519"
+  license "GPL-3.0-or-later"
   revision 1
+  head "https://github.com/adrienverge/yamllint.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "1a39e71f5471a2ef25cbb48d4ad7978171385ff38d5c40125f2c258cc6682244" => :catalina
-    sha256 "ee0e9115ae2423d3691c59c85ee10e03a0109706e24b2f51e21773ff15096a6b" => :mojave
-    sha256 "cb73a80359f4c689e5051d11cb3931b23268c573e00f52900875391442e10f51" => :high_sierra
+    rebuild 1
+    sha256 "dde0f5bcad64eded92a84bbef16ad7116c2a5f18c0fde762fb3dec81bc6f464c" => :big_sur
+    sha256 "af2843ddda203162bdb9f3d62f17ebc456dde0fc9e8638697e8d7a10ddeeaa5b" => :arm64_big_sur
+    sha256 "2525ef21d01d8df5cfff5b7832c918b964ca01664c705e13362778f995c9f58a" => :catalina
+    sha256 "f8c7778a79db826e14b4abd8bbd30570dc7b626673e1f15d576d5875d3d3e119" => :mojave
   end
 
   depends_on "libyaml"
-  depends_on "python@3.8"
-
-  resource "PyYAML" do
-    url "https://files.pythonhosted.org/packages/3d/d9/ea9816aea31beeadccd03f1f8b625ecf8f645bd66744484d162d84803ce5/PyYAML-5.3.tar.gz"
-    sha256 "e9f45bd5b92c7974e59bcd2dcc8631a6b6cc380a904725fce7bc08872e691615"
-  end
+  depends_on "python@3.9"
 
   resource "pathspec" do
-    url "https://files.pythonhosted.org/packages/ce/f2/d35c292da8fbff725625a17ae40f48f933070acd5ccddb03d8c09d81758d/pathspec-0.7.0.tar.gz"
-    sha256 "562aa70af2e0d434367d9790ad37aed893de47f1693e4201fd1d3dca15d19b96"
+    url "https://files.pythonhosted.org/packages/b7/64/e097eea8dcd2b2f7df6e4425fc98e7494e37b1a6e149603c31d327080a05/pathspec-0.8.1.tar.gz"
+    sha256 "86379d6b86d75816baba717e64b1a3a3469deb93bb76d613c9ce79edc5cb68fd"
+  end
+
+  resource "PyYAML" do
+    url "https://files.pythonhosted.org/packages/64/c2/b80047c7ac2478f9501676c988a5411ed5572f35d1beff9cae07d321512c/PyYAML-5.3.1.tar.gz"
+    sha256 "b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d"
   end
 
   def install

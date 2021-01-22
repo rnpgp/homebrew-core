@@ -1,44 +1,28 @@
 class Jmeter < Formula
   desc "Load testing and performance measurement application"
   homepage "https://jmeter.apache.org/"
-  url "https://www.apache.org/dyn/closer.cgi?path=jmeter/binaries/apache-jmeter-5.2.1.tgz"
-  sha256 "bbb3cb5fe0b16c1fa139727063f18d9aca6890c7edf53f3a614b8f929f1f1de9"
+  url "https://www.apache.org/dyn/closer.lua?path=jmeter/binaries/apache-jmeter-5.4.tgz"
+  mirror "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.4.tgz"
+  sha256 "2a900f56f106af5f165f408b61988a5fbde2b3c6dc5e7e9ccedbed0c01dc7ec1"
+  license "Apache-2.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    cellar :any
-    sha256 "be9973637adf70706a9e596b6d8098e3cb6d99757177d07c81a502da8ae6c719" => :catalina
-    sha256 "be9973637adf70706a9e596b6d8098e3cb6d99757177d07c81a502da8ae6c719" => :mojave
-    sha256 "be9973637adf70706a9e596b6d8098e3cb6d99757177d07c81a502da8ae6c719" => :high_sierra
+    cellar :any_skip_relocation
+    sha256 "b1ad4759a899c7c874774eda290a49e43d2d98fb5a04ee8b3ba6035587a019cd" => :big_sur
+    sha256 "d0d16fa9b777f63eb8bea56de7eb9a2d06a2e7e2df2f95002e65a849975cda9d" => :arm64_big_sur
+    sha256 "68fadfae2c4b129fe86504504ab980b942937ce0b66dba6dbd716846796f5262" => :catalina
+    sha256 "93a53dce5bd7d8a7dd8e6f51905e7c4c38db9c0965eee022925cc1166ea672ca" => :mojave
   end
 
-  resource "jmeterplugins-standard" do
-    url "https://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-1.4.0.zip"
-    sha256 "3f740bb9b9a7120ed72548071cd46a5f92929e1ab196acc1b2548549090a2148"
-  end
+  depends_on "openjdk"
 
-  resource "serveragent" do
-    url "https://jmeter-plugins.org/downloads/file/ServerAgent-2.2.1.zip"
-    sha256 "2d5cfd6d579acfb89bf16b0cbce01c8817cba52ab99b3fca937776a72a8f95ec"
-  end
-
-  resource "jmeterplugins-extras" do
-    url "https://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.4.0.zip"
-    sha256 "de35e653250882268aa24d011ec0f2afbc13e1c552fbb676c67515bc80ef3194"
-  end
-
-  resource "jmeterplugins-extraslibs" do
-    url "https://jmeter-plugins.org/downloads/file/JMeterPlugins-ExtrasLibs-1.4.0.zip"
-    sha256 "81d600a5bda6fdb362573d55c11208b2635728a2c18b7f647b9c7413c0f33ef3"
-  end
-
-  resource "jmeterplugins-webdriver" do
-    url "https://jmeter-plugins.org/downloads/file/JMeterPlugins-WebDriver-1.4.0.zip"
-    sha256 "521c2f7d452a84099407534bd50f29fd3761aa8a5beca52966bb9731e33b03e2"
-  end
-
-  resource "jmeterplugins-hadoop" do
-    url "https://jmeter-plugins.org/downloads/file/JMeterPlugins-Hadoop-1.4.0.zip"
-    sha256 "93030738d613748a685764fbfff0fe00ad2e161f2b72df6365294adc88db09b4"
+  resource "jmeter-plugins-manager" do
+    url "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-manager/1.6/jmeter-plugins-manager-1.6.jar"
+    sha256 "6f391eb6c935bd63ff9e356fb5f353d3c80b27bb762fcb5ce2c0c88f71fbd514"
   end
 
   def install
@@ -46,41 +30,10 @@ class Jmeter < Formula
     rm_f Dir["bin/*.bat"]
     prefix.install_metafiles
     libexec.install Dir["*"]
-    bin.write_exec_script libexec/"bin/jmeter"
+    (bin/"jmeter").write_env_script libexec/"bin/jmeter", JAVA_HOME: Formula["openjdk"].opt_prefix
 
-    resource("jmeterplugins-standard").stage do
-      rm_f Dir["lib/ext/*.bat"]
-      (libexec/"lib/ext").install Dir["lib/ext/*"]
-      (libexec/"licenses/plugins/standard").install "LICENSE", "README"
-    end
-    resource("serveragent").stage do
-      rm_f Dir["*.bat"]
-      rm_f Dir["lib/*winnt*"]
-      rm_f Dir["lib/*solaris*"]
-      rm_f Dir["lib/*aix*"]
-      rm_f Dir["lib/*hpux*"]
-      rm_f Dir["lib/*linux*"]
-      rm_f Dir["lib/*freebsd*"]
-      (libexec/"serveragent").install Dir["*"]
-    end
-    resource("jmeterplugins-extras").stage do
-      (libexec/"lib/ext").install Dir["lib/ext/*.jar"]
-      (libexec/"licenses/plugins/extras").install "LICENSE", "README"
-    end
-    resource("jmeterplugins-extraslibs").stage do
-      (libexec/"lib/ext").install Dir["lib/ext/*.jar"]
-      (libexec/"lib").install Dir["lib/*.jar"]
-      (libexec/"licenses/plugins/extras").install "LICENSE", "README"
-    end
-    resource("jmeterplugins-webdriver").stage do
-      (libexec/"lib/ext").install Dir["lib/ext/*.jar"]
-      (libexec/"lib").install Dir["lib/*.jar"]
-      (libexec/"licenses/plugins/extras").install "LICENSE", "README"
-    end
-    resource("jmeterplugins-hadoop").stage do
-      (libexec/"lib/ext").install Dir["lib/ext/*.jar"]
-      (libexec/"lib").install Dir["lib/*.jar"]
-      (libexec/"licenses/plugins/extras").install "LICENSE", "README", "NOTICE"
+    resource("jmeter-plugins-manager").stage do
+      (libexec/"lib/ext").install Dir["*"]
     end
   end
 

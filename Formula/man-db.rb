@@ -1,16 +1,32 @@
 class ManDb < Formula
   desc "Unix documentation system"
   homepage "https://www.nongnu.org/man-db/"
-  url "https://download.savannah.gnu.org/releases/man-db/man-db-2.9.0.tar.xz"
-  sha256 "5d4aacd9e8876d6a3203a889860c3524c293c38f04111a3350deab8a6cd3e261"
+  url "https://download.savannah.gnu.org/releases/man-db/man-db-2.9.3.tar.xz"
+  mirror "https://download-mirror.savannah.gnu.org/releases/man-db/man-db-2.9.3.tar.xz"
+  sha256 "fa5aa11ab0692daf737e76947f45669225db310b2801a5911bceb7551c5597b8"
+  license "GPL-2.0-or-later"
+  revision 1
+
+  livecheck do
+    url "https://download.savannah.gnu.org/releases/man-db/"
+    regex(/href=.*?man-db[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "acfb2487fd63a6340a33325d79da8431301863076d8b43b45eec27462d281371" => :catalina
-    sha256 "9f04ec084e26f41d481fbb828083c79de93c6007b3e2069a6d0ce67b570f9906" => :mojave
-    sha256 "23362793edcd3694c19900b2432bfb34850fc3df1bd757e372f3793510ccaf13" => :high_sierra
+    sha256 "e2b44b53a592dd2730f9d16426c61311f59d75b7a552f52a4d97a70cf07a9d5b" => :big_sur
+    sha256 "5ab9263c8026e1565fc943a7e2afca3005743d3708d98e791fe85e85db55c6c4" => :arm64_big_sur
+    sha256 "e16a1b87b4b431ff7013bda369abe3acdd3aa17323f5b1461f43e878c5f851a4" => :catalina
+    sha256 "1524da7565dc4ac2dea212276b7524dbb34a20415bed7ef3f1603bed8850de45" => :mojave
   end
 
   depends_on "pkg-config" => :build
+  depends_on "groff"
+
+  uses_from_macos "zlib"
+
+  on_linux do
+    depends_on "gdbm"
+  end
 
   resource "libpipeline" do
     url "https://download.savannah.gnu.org/releases/libpipeline/libpipeline-1.5.2.tar.gz"
@@ -72,12 +88,13 @@ class ManDb < Formula
     man1.install_symlink "glexgrog.1" => "lexgrog.1"
   end
 
-  def caveats; <<~EOS
-    Commands also provided by macOS have been installed with the prefix "g".
-    If you need to use these commands with their normal names, you
-    can add a "bin" directory to your PATH from your bashrc like:
-      PATH="#{opt_libexec}/bin:$PATH"
-  EOS
+  def caveats
+    <<~EOS
+      Commands also provided by macOS have been installed with the prefix "g".
+      If you need to use these commands with their normal names, you
+      can add a "bin" directory to your PATH from your bashrc like:
+        PATH="#{opt_libexec}/bin:$PATH"
+    EOS
   end
 
   test do

@@ -1,14 +1,21 @@
 class Poppler < Formula
   desc "PDF rendering library (based on the xpdf-3.0 code base)"
   homepage "https://poppler.freedesktop.org/"
-  url "https://poppler.freedesktop.org/poppler-0.84.0.tar.xz"
-  sha256 "c7a130da743b38a548f7a21fe5940506fb1949f4ebdd3209f0e5b302fa139731"
-  head "https://anongit.freedesktop.org/git/poppler/poppler.git"
+  url "https://poppler.freedesktop.org/poppler-21.01.0.tar.xz"
+  sha256 "016dde34e5f868ea98a32ca99b643325a9682281500942b7113f4ec88d20e2f3"
+  license "GPL-2.0-only"
+  head "https://gitlab.freedesktop.org/poppler/poppler.git"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?poppler[._-]v?(\d+(?:\.\d+)*)\.t/i)
+  end
 
   bottle do
-    sha256 "400df9890bc951aab711cbd2f1449498ce5708298d17b0cc0d2719cc8e20759c" => :catalina
-    sha256 "a2bd748c1d782e9a75db56fa40a55362c9a998a9021b4d55074694bf7be6e090" => :mojave
-    sha256 "19b42ed9d840c6476681be4db9578fe029a800450bec08956ee2a9de5e2ed554" => :high_sierra
+    sha256 "a018204184c36a94665f432cc37b30eb915f6489ae1eee2211ff86870644f66d" => :big_sur
+    sha256 "84d42277cfac6e8a919b002f6d5fd0e18361cebe272728fa208f68c13566cae8" => :arm64_big_sur
+    sha256 "23a0d0477eaa7de9bb4639316fa33d5828d824dfdbc7ebf7eb355d253b0ea325" => :catalina
+    sha256 "144b14d28bc1dd8c235e8b6affbc94927be53d13a2d3ec50c38236e846f6fc78" => :mojave
   end
 
   depends_on "cmake" => :build
@@ -26,14 +33,16 @@ class Poppler < Formula
   depends_on "nss"
   depends_on "openjpeg"
   depends_on "qt"
+
+  uses_from_macos "gperf" => :build
   uses_from_macos "curl"
 
   conflicts_with "pdftohtml", "pdf2image", "xpdf",
-    :because => "poppler, pdftohtml, pdf2image, and xpdf install conflicting executables"
+    because: "poppler, pdftohtml, pdf2image, and xpdf install conflicting executables"
 
   resource "font-data" do
-    url "https://poppler.freedesktop.org/poppler-data-0.4.9.tar.gz"
-    sha256 "1f9c7e7de9ecd0db6ab287349e31bf815ca108a5a175cf906a90163bdbe32012"
+    url "https://poppler.freedesktop.org/poppler-data-0.4.10.tar.gz"
+    sha256 "6e2fcef66ec8c44625f94292ccf8af9f1d918b410d5aa69c274ce67387967b30"
   end
 
   def install
@@ -68,7 +77,7 @@ class Poppler < Formula
       *Dir["#{bin}/*"],
     ].each do |f|
       macho = MachO.open(f)
-      macho.change_dylib("@rpath/#{libpoppler}", "#{lib}/#{libpoppler}")
+      macho.change_dylib("@rpath/#{libpoppler}", "#{opt_lib}/#{libpoppler}")
       macho.write!
     end
   end

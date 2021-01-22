@@ -3,10 +3,12 @@ class Gox < Formula
   homepage "https://github.com/mitchellh/gox"
   url "https://github.com/mitchellh/gox/archive/v1.0.1.tar.gz"
   sha256 "25aab55a4ba75653931be2a2b95e29216b54bd8fecc7931bd416efe49a388229"
+  license "MPL-2.0"
   head "https://github.com/mitchellh/gox.git"
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "c09b516c00852371c0422598390b06391f363deb151db428131b02cd0c31bcee" => :big_sur
     sha256 "6693416aef377d44385c25eb786d25f963258c0895491beedbf6039d7c84c06d" => :catalina
     sha256 "008ec56acef96c3ad3117bcde87f1998fcf4ef9c93f82ae363ed6ac39914a95d" => :mojave
     sha256 "c2d77e6fadb6c7585a5df89eb91aaf1f41f6b88829e1a647efb4ebbc70277b3b" => :high_sierra
@@ -17,7 +19,7 @@ class Gox < Formula
 
   resource "iochan" do
     url "https://github.com/mitchellh/iochan.git",
-        :revision => "87b45ffd0e9581375c491fef3d32130bb15c5bd7"
+        revision: "87b45ffd0e9581375c491fef3d32130bb15c5bd7"
   end
 
   # This resource is for the test so doesn't really need to be updated.

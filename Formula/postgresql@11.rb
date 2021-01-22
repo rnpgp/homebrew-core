@@ -1,29 +1,41 @@
 class PostgresqlAT11 < Formula
   desc "Object-relational database system"
   homepage "https://www.postgresql.org/"
-  url "https://ftp.postgresql.org/pub/source/v11.6/postgresql-11.6.tar.bz2"
-  sha256 "49924f7ff92965fdb20c86e0696f2dc9f8553e1563124ead7beedf8910c13170"
+  url "https://ftp.postgresql.org/pub/source/v11.10/postgresql-11.10.tar.bz2"
+  sha256 "13e6d2f80662fe463bc7718cdf0de6a9ec67fc78afcc7a3ae66b9ea19bb97899"
+  license "PostgreSQL"
+
+  livecheck do
+    url "https://ftp.postgresql.org/pub/source/"
+    regex(%r{href=["']?v?(11(?:\.\d+)*)/?["' >]}i)
+  end
 
   bottle do
-    sha256 "c91e358723fd5f700f059a0a1beff478d3e4aaa2ec40a3a166e946ff130d9fd0" => :catalina
-    sha256 "a0ec5167cf23417dac44c1c55223b04d01ac4d12dd3644c6b9996e1ff6fac062" => :mojave
-    sha256 "b961161a08696433b6b4280cb10719ce869dc5dc4f259ec8f3830098cc4cef5d" => :high_sierra
+    sha256 "1be79dc456c13293c3f01c04e21004bd02c44f79cba83d2bde76195e35e0e02e" => :big_sur
+    sha256 "1cd0993f4b4fb154b3a028b3a795906f7938ad105ebcc8e8e371db408e9f6ea5" => :arm64_big_sur
+    sha256 "d0758c755abfe5516c4f9ea89fd1926733411d0f87a0b91502dbff09c6f78b86" => :catalina
+    sha256 "ea13e9ccace5efd7fdbb60b9af0ee2fa1f1751ff5aea0dbff913c7f62a876d35" => :mojave
   end
 
   keg_only :versioned_formula
+
+  # https://www.postgresql.org/support/versioning/
+  deprecate! date: "2023-11-09", because: :unsupported
 
   depends_on "pkg-config" => :build
   depends_on "icu4c"
   depends_on "openssl@1.1"
   depends_on "readline"
+
   uses_from_macos "libxml2"
   uses_from_macos "libxslt"
   uses_from_macos "perl"
 
-  def install
-    # avoid adding the SDK library directory to the linker search path
-    ENV["XML2_CONFIG"] = "xml2-config --exec-prefix=/usr"
+  on_linux do
+    depends_on "util-linux"
+  end
 
+  def install
     ENV.prepend "LDFLAGS", "-L#{Formula["openssl@1.1"].opt_lib} -L#{Formula["readline"].opt_lib}"
     ENV.prepend "CPPFLAGS", "-I#{Formula["openssl@1.1"].opt_include} -I#{Formula["readline"].opt_include}"
 
@@ -45,15 +57,13 @@ class PostgresqlAT11 < Formula
       --with-openssl
       --with-pam
       --with-perl
+      --with-tcl
       --with-uuid=e2fs
     ]
 
-    # The CLT is required to build Tcl support on 10.7 and 10.8 because
-    # tclConfig.sh is not part of the SDK
-    args << "--with-tcl"
-    if File.exist?("#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework/tclConfig.sh")
-      args << "--with-tclconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework"
-    end
+    # PostgreSQL by default uses xcodebuild internally to determine this,
+    # which does not work on CLT-only installs.
+    args << "PG_SYSROOT=#{MacOS.sdk_path}" if MacOS.sdk_root_needed?
 
     system "./configure", *args
     system "make"
@@ -67,51 +77,67 @@ class PostgresqlAT11 < Formula
   end
 
   def post_install
+    return if ENV["CI"]
+
     (var/"log").mkpath
-    (var/name).mkpath
-    unless File.exist? "#{var}/#{name}/PG_VERSION"
-      system "#{bin}/initdb", "--locale=C", "-E", "UTF-8", "#{var}/#{name}"
-    end
+    postgresql_datadir.mkpath
+    system "#{bin}/initdb", "--locale=C", "-E", "UTF-8", postgresql_datadir unless pg_version_exists?
   end
 
-  def caveats; <<~EOS
-    To migrate existing data from a previous major version of PostgreSQL run:
-      brew postgresql-upgrade-database
-  EOS
+  def postgresql_datadir
+    var/name
   end
 
-  plist_options :manual => "pg_ctl -D #{HOMEBREW_PREFIX}/var/postgresql@11 start"
+  def postgresql_log_path
+    var/"log/#{name}.log"
+  end
 
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>KeepAlive</key>
-      <true/>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/postgres</string>
-        <string>-D</string>
-        <string>#{var}/#{name}</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>WorkingDirectory</key>
-      <string>#{HOMEBREW_PREFIX}</string>
-      <key>StandardOutPath</key>
-      <string>#{var}/log/#{name}.log</string>
-      <key>StandardErrorPath</key>
-      <string>#{var}/log/#{name}.log</string>
-    </dict>
-    </plist>
-  EOS
+  def pg_version_exists?
+    (postgresql_datadir/"PG_VERSION").exist?
+  end
+
+  def caveats
+    <<~EOS
+      This formula has created a default database cluster with:
+        initdb --locale=C -E UTF-8 #{postgresql_datadir}
+      For more details, read:
+        https://www.postgresql.org/docs/#{version.major}/app-initdb.html
+    EOS
+  end
+
+  plist_options manual: "pg_ctl -D #{HOMEBREW_PREFIX}/var/postgresql@11 start"
+
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>KeepAlive</key>
+        <true/>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/postgres</string>
+          <string>-D</string>
+          <string>#{postgresql_datadir}</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>WorkingDirectory</key>
+        <string>#{HOMEBREW_PREFIX}</string>
+        <key>StandardOutPath</key>
+        <string>#{postgresql_log_path}</string>
+        <key>StandardErrorPath</key>
+        <string>#{postgresql_log_path}</string>
+      </dict>
+      </plist>
+    EOS
   end
 
   test do
-    system "#{bin}/initdb", testpath/"test"
+    system "#{bin}/initdb", testpath/"test" unless ENV["CI"]
     assert_equal opt_pkgshare.to_s, shell_output("#{bin}/pg_config --sharedir").chomp
     assert_equal opt_lib.to_s, shell_output("#{bin}/pg_config --libdir").chomp
     assert_equal opt_lib.to_s, shell_output("#{bin}/pg_config --pkglibdir").chomp

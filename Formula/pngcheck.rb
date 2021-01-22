@@ -5,8 +5,15 @@ class Pngcheck < Formula
   sha256 "77f0a039ac64df55fbd06af6f872fdbad4f639d009bbb5cd5cbe4db25690f35f"
   revision 1
 
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/pngcheck[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
+
   bottle do
     cellar :any_skip_relocation
+    sha256 "0fef6b0676fa1f23b9fcd00e404a7d8b737d5deb7a940e8ca19df104dd767993" => :big_sur
+    sha256 "744c6241d76de0249e24a3c754dcc5df2d39eb067d552ec86300ca9d607f439e" => :arm64_big_sur
     sha256 "7fb0d821218aba52e2c261c4cdcc50438d71cbf232baba97ef13e861c3386a11" => :catalina
     sha256 "22033aa6f7b96ecb9d7eb038b7103e5faa782f4d36c142c3220f1e1ff1fc9e9e" => :mojave
     sha256 "f4cdf56cdf51ab156bcc1009cce5cdd46d86de12811549136d50a1a18295b7c7" => :high_sierra

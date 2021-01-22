@@ -1,7 +1,7 @@
 class Dnsrend < Formula
   desc "DNS message dissector"
-  homepage "http://romana.now.ie/dnsrend"
-  url "http://romana.now.ie/software/dnsrend-0.08.tar.gz"
+  homepage "https://lecter.redbrick.dcu.ie/dnsrend/"
+  url "https://lecter.redbrick.dcu.ie/software/dnsrend-0.08.tar.gz"
   sha256 "32fa6965f68e7090af7e4a9a06de53d12f40397f644a76cf97b6b4cb138da93a"
 
   bottle do
@@ -15,6 +15,8 @@ class Dnsrend < Formula
     sha256 "83519cb5e7899fa2d2eca7f2a0e4ff76336582206ac42063ad1a446612bf3471" => :yosemite
     sha256 "d9f91e7344b0457ec4d0ab29c95a91bf91c4c8d3ee8432b4159b1818785c043f" => :mavericks
   end
+
+  disable! date: "2020-12-08", because: :unmaintained
 
   resource "Net::Pcap" do
     url "https://cpan.metacpan.org/authors/id/S/SA/SAPER/Net-Pcap-0.17.tar.gz"

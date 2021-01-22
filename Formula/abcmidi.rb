@@ -1,14 +1,21 @@
 class Abcmidi < Formula
   desc "Converts abc music notation files to MIDI files"
   homepage "https://ifdo.ca/~seymour/runabc/top.html"
-  url "https://ifdo.ca/~seymour/runabc/abcMIDI-2020.01.06.zip"
-  sha256 "566de0fdfc99cc9b1148f681c59086f2e9baac10a39bba7ec4609f84a35d8749"
+  url "https://ifdo.ca/~seymour/runabc/abcMIDI-2020.12.10.zip"
+  sha256 "0d1a30493a704447ad317a7d1c814420300723e6bb9e791a03ac34920cbb8c3d"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?abcMIDI[._-]v?(\d{4}(?:\.\d+)+)\.zip/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "0b7015ce209f6fa1ab94ce527d3f76e6611c2e1baa3b419b183c216f6bf141b5" => :catalina
-    sha256 "bdf2a4059f13d40619609f51f2456e85c1d194cc496340e56b2fcdb93016cacf" => :mojave
-    sha256 "8d60c3135589a9322e11c899295ac3646a3702e33cbe0b7ed8de2f0969b27f86" => :high_sierra
+    sha256 "2195f1ac1210b326a80784da815ed9c9218011bfbbf1f890995a7164e3e9577c" => :big_sur
+    sha256 "636adf526ede56aa8563c98088c22e5e503b56e19ed85fa60566225219c3476d" => :arm64_big_sur
+    sha256 "2d0d5e7b09858b9062cf2d4e6cd1808615134af08e6d67b21f16ff510ac9ee13" => :catalina
+    sha256 "fec057c12064d11bcdb6c4fcf335562d5d6ab2d2bf6f5ef8c9d9e2a9ddc05b8a" => :mojave
   end
 
   def install

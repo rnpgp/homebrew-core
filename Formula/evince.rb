@@ -1,19 +1,26 @@
 class Evince < Formula
   desc "GNOME document viewer"
   homepage "https://wiki.gnome.org/Apps/Evince"
-  url "https://download.gnome.org/sources/evince/3.34/evince-3.34.2.tar.xz"
-  sha256 "3cc0955f11204e3a2db1c7ab99b866692749592257485b87304134ad69da0617"
+  url "https://download.gnome.org/sources/evince/3.38/evince-3.38.0.tar.xz"
+  sha256 "26df897a417545b476d2606b14731122e84278ae994bd64ea535449c3cf01948"
+  license "GPL-2.0-or-later"
+  revision 3
 
-  bottle do
-    sha256 "d2f32a656495d150351f73bcb0c0f1c389d5092bc6dde4e598023040950593d1" => :catalina
-    sha256 "22467d7958452e607ca57b5c1b13375a4e1beb5674fdc0925c1147ff1f9b6bea" => :mojave
-    sha256 "569f413b261f5fb3b30bdc4a9a0fcb4bbbdb8b6e756492f0fc425396a99f9442" => :high_sierra
+  livecheck do
+    url :stable
   end
 
-  depends_on "appstream-glib" => :build
+  bottle do
+    sha256 "fc4985043ed06d8d6fa6295798e358561bc4450f760eb16c85258d5251a89cad" => :big_sur
+    sha256 "afcbf0dc169fdd425f6eb3bd794e3501df4d20f984a773b60b0a5175a35b0526" => :arm64_big_sur
+    sha256 "cb2dd1b96c0ba421fba972447653c9df1b752ad700078fc18e8059f9dbd94789" => :catalina
+    sha256 "29a0b6cf9b844348efbb47fff9283f72a36d83b4fb7005de8358a22e2c4d3eb0" => :mojave
+  end
+
   depends_on "gobject-introspection" => :build
-  depends_on "intltool" => :build
   depends_on "itstool" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
   depends_on "pkg-config" => :build
   depends_on "adwaita-icon-theme"
   depends_on "djvulibre"
@@ -21,42 +28,33 @@ class Evince < Formula
   depends_on "gtk+3"
   depends_on "hicolor-icon-theme"
   depends_on "libarchive"
+  depends_on "libgxps"
   depends_on "libsecret"
   depends_on "libspectre"
-  depends_on "libxml2"
   depends_on "poppler"
-  depends_on "python"
+  depends_on "python@3.9"
 
   def install
-    ENV["GETTEXTDATADIR"] = "#{Formula["appstream-glib"].opt_share}/gettext"
+    ENV["DESTDIR"] = "/"
 
-    # Fix build failure "ar: illegal option -- D"
-    # Reported 15 Sep 2017 https://bugzilla.gnome.org/show_bug.cgi?id=787709
-    inreplace "configure", "AR_FLAGS=crD", "AR_FLAGS=r"
+    args = %w[
+      -Dnautilus=false
+      -Ddjvu=enabled
+      -Dgxps=enabled
+      -Dcomics=enabled
+      -Dgtk_doc=false
+      -Dintrospection=true
+      -Dbrowser_plugin=false
+      -Dgspell=enabled
+      -Ddbus=false
+      -Dps=enabled
+    ]
 
-    # Add MacOS mime-types to the list of supported comic book archive mime-types
-    # Submitted upstream at https://gitlab.gnome.org/GNOME/evince/merge_requests/157
-    inreplace "configure", "COMICS_MIME_TYPES=\"",
-      "COMICS_MIME_TYPES=\"application/x-rar;application/zip;application/x-cb7;application/x-7z-comperssed;application/x-tar;"
-
-    # forces use of gtk3-update-icon-cache instead of gtk-update-icon-cache. No bugreport should
-    # be filed for this since it only occurs because Homebrew renames gtk+3's gtk-update-icon-cache
-    # to gtk3-update-icon-cache in order to avoid a collision between gtk+ and gtk+3.
-    inreplace "data/Makefile.in", "gtk-update-icon-cache", "gtk3-update-icon-cache"
-
-    xy = Language::Python.major_minor_version "python3"
-    ENV.append_path "PYTHONPATH", "#{Formula["libxml2"].opt_lib}/python#{xy}/site-packages"
-
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}",
-                          "--disable-nautilus",
-                          "--disable-schemas-compile",
-                          "--enable-introspection",
-                          "--enable-djvu",
-                          "--disable-browser-plugin"
-    system "make", "install"
+    mkdir "build" do
+      system "meson", *std_meson_args, *args, ".."
+      system "ninja", "-v"
+      system "ninja", "install", "-v"
+    end
   end
 
   def post_install

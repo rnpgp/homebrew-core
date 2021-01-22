@@ -1,36 +1,46 @@
 class Asciidoc < Formula
+  include Language::Python::Shebang
+
   desc "Formatter/translator for text files to numerous formats. Includes a2x"
-  homepage "http://asciidoc.org/"
-  # This release is listed as final on GitHub, but not listed on asciidoc.org.
-  url "https://github.com/asciidoc/asciidoc/archive/8.6.10.tar.gz"
-  sha256 "9e52f8578d891beaef25730a92a6e723596ddbd07bfe0d2a56486fcf63a0b983"
-  revision 2
-  head "https://github.com/asciidoc/asciidoc.git"
+  homepage "https://asciidoc.org/"
+  url "https://github.com/asciidoc/asciidoc-py3/archive/9.0.4.tar.gz"
+  sha256 "9e269f336a71e8685d03a00c71b55ca029eed9f7baf1afe67c447be32206b176"
+  license "GPL-2.0-only"
+  head "https://github.com/asciidoc/asciidoc-py3.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "d81d3b126c250069e1aad86adedb06fa8e18ff0d3c063d73d7b0698e24d51df4" => :catalina
-    sha256 "f89040aa055faab054a4b82e0cdfec724b57529844368c2f4fe81683ee2967f9" => :mojave
-    sha256 "0a021fbfe992e2357c6d6b9b940ca3b080911a6d156bd3fb52775c452a272075" => :high_sierra
-    sha256 "0a021fbfe992e2357c6d6b9b940ca3b080911a6d156bd3fb52775c452a272075" => :sierra
+    sha256 "a7f6a49939e627eece6cddf4cbb91ae72922e6beb88ae9715cfd479051b3fb4b" => :big_sur
+    sha256 "a27b62e2f37f96b534abb47af010a7b6282339439a4a3b19682544e7634f3ca1" => :arm64_big_sur
+    sha256 "0d4c6143d618720d9d1907d4a914b0ba685e67ee024859de3afb7fb6f50bbbb5" => :catalina
+    sha256 "23836dcab06fc863b9babf4501179317d6e28899a83f078aca1cac564ef585e2" => :mojave
+    sha256 "e61daf8474cb187643e49c313b839c957dbaecc5944ed43c9b8a8116ff656a5f" => :high_sierra
   end
 
   depends_on "autoconf" => :build
   depends_on "docbook-xsl" => :build
   depends_on "docbook"
+  depends_on "python@3.9"
   depends_on "source-highlight"
 
+  uses_from_macos "libxml2" => :build
+  uses_from_macos "libxslt" => :build
+
+  on_linux do
+    depends_on "xmlto" => :build
+  end
+
   def install
-    ENV.prepend_path "PATH", "/System/Library/Frameworks/Python.framework/Versions/2.7/bin"
     ENV["XML_CATALOG_FILES"] = etc/"xml/catalog"
 
     system "autoconf"
     system "./configure", "--prefix=#{prefix}"
 
-    inreplace %w[a2x.py asciidoc.py filters/code/code-filter.py
-                 filters/graphviz/graphviz2png.py filters/latex/latex2img.py
-                 filters/music/music2png.py filters/unwraplatex.py],
-      "#!/usr/bin/env python2", "#!/usr/bin/python"
+    %w[
+      a2x.py asciidoc.py filters/code/code-filter.py
+      filters/graphviz/graphviz2png.py filters/latex/latex2img.py
+      filters/music/music2png.py filters/unwraplatex.py
+    ].map { |f| rewrite_shebang detected_python_shebang, f }
 
     # otherwise macOS's xmllint bails out
     inreplace "Makefile", "-f manpage", "-f manpage -L"
@@ -56,6 +66,6 @@ class Asciidoc < Formula
   test do
     (testpath/"test.txt").write("== Hello World!")
     system "#{bin}/asciidoc", "-b", "html5", "-o", "test.html", "test.txt"
-    assert_match %r{\<h2 id="_hello_world"\>Hello World!\</h2\>}, File.read("test.html")
+    assert_match %r{<h2 id="_hello_world">Hello World!</h2>}, File.read("test.html")
   end
 end

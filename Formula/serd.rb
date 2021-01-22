@@ -1,14 +1,21 @@
 class Serd < Formula
   desc "C library for RDF syntax"
   homepage "https://drobilla.net/software/serd/"
-  url "https://download.drobilla.net/serd-0.30.2.tar.bz2"
-  sha256 "9d3102701172804f823f2215ca3147c50eba992641f9fbe014272355f4937202"
+  url "https://download.drobilla.net/serd-0.30.6.tar.bz2"
+  sha256 "f5a2c74c659d8b318059068f135a43a3771491c367b6947e053a713b23cd37ef"
+  license "ISC"
+
+  livecheck do
+    url "https://download.drobilla.net/"
+    regex(/href=.*?serd[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "65513a53267446e3961469cb568fac89cf3e7c2a95bc15d746f1c4c02ed3b0ad" => :catalina
-    sha256 "bd9e7ce8907a1666e96d81f86002acde4aef03a7b8546370b6116ea233c2624c" => :mojave
-    sha256 "660553dc88a3855c6d62f323297a2d383ad5493ba859a41779a4d799159a23b7" => :high_sierra
+    sha256 "c53043a419c1409b8c1df9a3ab3b304525a69392933ffd421fa6fa3c22df4ab9" => :big_sur
+    sha256 "e5b28b3af541976f1bb6a3e5642ae7cc51ee82d0be992d28a0f533417f0afb69" => :arm64_big_sur
+    sha256 "6ab4aae5b944f5fdcbd08d54b9fa55275e5a4cea89e1711b1288353ec75f6f4b" => :catalina
+    sha256 "c579e8246255757af42717d1b93989c6422e8fba8459e5446963ab95bd78f383" => :mojave
   end
 
   depends_on "pkg-config" => :build

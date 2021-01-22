@@ -1,14 +1,23 @@
 class Hdf5 < Formula
   desc "File format designed to store large amounts of data"
   homepage "https://www.hdfgroup.org/HDF5"
-  url "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/hdf5-1.10.6.tar.bz2"
-  sha256 "09d6301901685201bb272a73e21c98f2bf7e044765107200b01089104a47c3bd"
+  url "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.bz2"
+  sha256 "97906268640a6e9ce0cde703d5a71c9ac3092eded729591279bf2e3ca9765f61"
+  revision 1
+
+  livecheck do
+    url "https://www.hdfgroup.org/downloads/hdf5/"
+    regex(/Newsletter for HDF5[._-]v?(.*?) Release/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "9ece0ebb705a669c6c74b1305631077d9bbbd625c7ed67c0bb4d3b2b3a31dc88" => :catalina
-    sha256 "ae200d2122b45c5a08c3f1b8d2d141eac3fbe362c3f330f81003146e81c0fef5" => :mojave
-    sha256 "1b9703ab1422ac13493673ea56d9d7fce8ed678751a666f3e0384b9ba786d028" => :high_sierra
+    rebuild 1
+    sha256 "7cd7cdc13241744c74a94eb578575c357cf263ff0228251a7882a9b7452bac92" => :big_sur
+    sha256 "2eb3e73920211c3b9f2b8fb3e2bd39d00dfd5069812e3639bb39d4cfe7d78cab" => :arm64_big_sur
+    sha256 "ff70299b918490134fb3e883110f0092d591885db3fc798f2cc0f48cd9472f36" => :catalina
+    sha256 "450afa0c0e0783b416e67df0d2a56c5f12518df65ba0326884e06f3388c5c445" => :mojave
+    sha256 "541d0b241a81248d8b6c3d3b205fb3f319e5cefe751d7750aa2749b9696ff749" => :high_sierra
   end
 
   depends_on "autoconf" => :build
@@ -16,6 +25,7 @@ class Hdf5 < Formula
   depends_on "libtool" => :build
   depends_on "gcc" # for gfortran
   depends_on "szip"
+
   uses_from_macos "zlib"
 
   def install
@@ -38,8 +48,15 @@ class Hdf5 < Formula
       --enable-fortran
       --enable-cxx
     ]
+    on_linux do
+      args << "--with-zlib=#{Formula["zlib"].opt_prefix}"
+    end
 
     system "./configure", *args
+
+    # Avoid shims in settings file
+    inreplace "src/libhdf5.settings", HOMEBREW_LIBRARY/"Homebrew/shims/mac/super/clang", "/usr/bin/clang"
+
     system "make", "install"
   end
 

@@ -1,38 +1,45 @@
 class Wxmaxima < Formula
   desc "Cross platform GUI for Maxima"
   homepage "https://wxmaxima-developers.github.io/wxmaxima/"
-  url "https://github.com/wxMaxima-developers/wxmaxima/archive/Version-20.01.2.tar.gz"
-  sha256 "af6e653e1f25951c402097d92819d70e9765bae897f88f616d62b8320ddbebc7"
+  url "https://github.com/wxMaxima-developers/wxmaxima/archive/Version-20.12.2.tar.gz"
+  sha256 "7d2ecf6a19e3ba0f6d3889c1855a85884b71365f5844003c7f3c996e2967d65e"
+  license "GPL-2.0-or-later"
   head "https://github.com/wxMaxima-developers/wxmaxima.git"
 
   bottle do
-    cellar :any
-    sha256 "6f49b38eb153adc922fe4953964a1eef028f152ac6a9fbc9610f6e5b0ece899c" => :catalina
-    sha256 "89e1b5ecb0d0f82eb6fe32434dcf22c1af25e28cf07e3375fd5af56800b31670" => :mojave
-    sha256 "2fbdcd6cacc9169378d3c28f2b5507b864c7d7c8ff0685cec038138696c7893d" => :high_sierra
+    sha256 "e84bf2ae87721e760beb0e0dddcd463ecb430b2ced3fb763f696251deda35abe" => :big_sur
+    sha256 "c671a35bfceeb9f2aa98f4b14cbe3c69434697ea6af26b36dcf5f9f6886fc7a6" => :catalina
+    sha256 "817f99c13402e2740e0ddddcac66fdedeea605957b47d0c66f30d3e07cb7f341" => :mojave
   end
 
   depends_on "cmake" => :build
   depends_on "gettext" => :build
+  depends_on "ninja" => :build
+  depends_on "maxima"
   depends_on "wxmac"
 
   def install
-    system "cmake", ".", *std_cmake_args
-    system "make", "install"
-    prefix.install "wxMaxima.app"
+    mkdir "build-wxm" do
+      system "cmake", "..", "-GNinja", *std_cmake_args
+      system "ninja"
+      system "ninja", "install"
+      prefix.install "src/wxMaxima.app"
+    end
 
     bash_completion.install "data/wxmaxima"
+    bin.write_exec_script "#{prefix}/wxMaxima.app/Contents/MacOS/wxmaxima"
   end
 
-  def caveats; <<~EOS
-    When you start wxMaxima the first time, set the path to Maxima
-    (e.g. #{HOMEBREW_PREFIX}/bin/maxima) in the Preferences.
+  def caveats
+    <<~EOS
+      When you start wxMaxima the first time, set the path to Maxima
+      (e.g. #{HOMEBREW_PREFIX}/bin/maxima) in the Preferences.
 
-    Enable gnuplot functionality by setting the following variables
-    in ~/.maxima/maxima-init.mac:
-      gnuplot_command:"#{HOMEBREW_PREFIX}/bin/gnuplot"$
-      draw_command:"#{HOMEBREW_PREFIX}/bin/gnuplot"$
-  EOS
+      Enable gnuplot functionality by setting the following variables
+      in ~/.maxima/maxima-init.mac:
+        gnuplot_command:"#{HOMEBREW_PREFIX}/bin/gnuplot"$
+        draw_command:"#{HOMEBREW_PREFIX}/bin/gnuplot"$
+    EOS
   end
 
   test do

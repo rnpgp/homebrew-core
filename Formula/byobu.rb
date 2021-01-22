@@ -1,14 +1,21 @@
 class Byobu < Formula
   desc "Text-based window manager and terminal multiplexer"
   homepage "https://launchpad.net/byobu"
-  url "https://launchpad.net/byobu/trunk/5.130/+download/byobu_5.130.orig.tar.gz"
-  sha256 "47e414161dda124287b9ec1cf94acc716b49e7428c6ec7efeed181f477e17461"
+  url "https://launchpad.net/byobu/trunk/5.133/+download/byobu_5.133.orig.tar.gz"
+  sha256 "4d8ea48f8c059e56f7174df89b04a08c32286bae5a21562c5c6f61be6dab7563"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "07b9d980d33ff5c4cccc2f9ff70b17c88e97a1a34d8a43bfba1378f4ad8981a8" => :catalina
-    sha256 "07b9d980d33ff5c4cccc2f9ff70b17c88e97a1a34d8a43bfba1378f4ad8981a8" => :mojave
-    sha256 "07b9d980d33ff5c4cccc2f9ff70b17c88e97a1a34d8a43bfba1378f4ad8981a8" => :high_sierra
+    sha256 "d3b41a0d0546732f6bbbdedae5357df00625f5c9f7be0b631c4a0778107d3549" => :big_sur
+    sha256 "e4b6177bef58c89b06a356a0bb96aae9cf60678442af57f9a5e7489b3a162ae6" => :arm64_big_sur
+    sha256 "39b468dabc1497338b4511f9f565f9adcdd058a99207de345da28b18a0826ae6" => :catalina
+    sha256 "39b468dabc1497338b4511f9f565f9adcdd058a99207de345da28b18a0826ae6" => :mojave
+    sha256 "39b468dabc1497338b4511f9f565f9adcdd058a99207de345da28b18a0826ae6" => :high_sierra
   end
 
   head do
@@ -23,7 +30,7 @@ class Byobu < Formula
   depends_on "newt"
   depends_on "tmux"
 
-  conflicts_with "ctail", :because => "both install `ctail` binaries"
+  conflicts_with "ctail", because: "both install `ctail` binaries"
 
   def install
     if build.head?
@@ -34,10 +41,11 @@ class Byobu < Formula
     system "make", "install"
   end
 
-  def caveats; <<~EOS
-    Add the following to your shell configuration file:
-      export BYOBU_PREFIX=#{HOMEBREW_PREFIX}
-  EOS
+  def caveats
+    <<~EOS
+      Add the following to your shell configuration file:
+        export BYOBU_PREFIX=#{HOMEBREW_PREFIX}
+    EOS
   end
 
   test do

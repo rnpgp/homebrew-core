@@ -3,9 +3,12 @@ class Robodoc < Formula
   homepage "https://www.xs4all.nl/~rfsber/Robo/index.html"
   url "https://rfsber.home.xs4all.nl/Robo/archives/robodoc-4.99.43.tar.bz2"
   sha256 "3d826424a3957502caacf39951f7805f1d72bb374c0533de7ca1036f306afdc7"
+  license "GPL-3.0"
 
   bottle do
     rebuild 1
+    sha256 "e51ea8add4cb4076e6416eb35d4edeaf3564df4553c77a4d3cc6a8844b233207" => :big_sur
+    sha256 "3d9deb13c98147c7deeee0428da4554a9f5c768cfb8c0761ab33f78073c494b9" => :arm64_big_sur
     sha256 "2d80013dbc6b8f85599bd793741b69fde224552b0bb543fc3029f488fc2c55bc" => :catalina
     sha256 "338eaad16a1962befefcac8adff0f501409fdaee709b42b93a19221a4bc79728" => :mojave
     sha256 "0fa779e5f937f0e7a4c17a2bbe86ea84178bd5d0739ba3f8429ced46f3c10435" => :high_sierra

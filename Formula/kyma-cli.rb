@@ -1,34 +1,35 @@
 class KymaCli < Formula
   desc "Kyma command-line interface"
   homepage "https://kyma-project.io"
-  url "https://github.com/kyma-project/cli.git",
-      :tag      => "1.9.0",
-      :revision => "0fd63730643d6bd1abb5e50374000740d1721772"
+  url "https://github.com/kyma-project/cli/archive/1.18.0.tar.gz"
+  sha256 "698f693f5f70a7f2ff91831d6ef8fdc10d1ceace81e985b4c2ca02a73fddcc48"
+  license "Apache-2.0"
+  revision 1
   head "https://github.com/kyma-project/cli.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "0b46e17d23009cc8eb0fb2bb2a4aaae7b85cde198a42a6f114630b4386d227c1" => :catalina
-    sha256 "24161d304dabe8646757257800d9f5cf34e660716fccb0ee21edd303bc0d627d" => :mojave
-    sha256 "0ad76baeab2ab4cb19ed6c76431542125d8c10f1f1f2d481998a8eb7d2201598" => :high_sierra
+    sha256 "9da6f18bf1f7481bd341bd9de2ec6c283842e5d382f1f12aab62e1b49796917f" => :big_sur
+    sha256 "6e5722bc459a0ba3796038ee74937686dae941927fb395c18091c9a6b7c91f75" => :catalina
+    sha256 "46d9dd3817ecb02b8f4e4dd60623af408c6b599c87fecee570291e3b62b93e71" => :mojave
   end
 
-  depends_on "go" => :build
+  depends_on "go@1.14" => :build
 
   def install
-    system "make", "build-darwin"
-    bin.install "bin/kyma-darwin" => "kyma"
+    ldflags = %W[
+      -s -w
+      -X github.com/kyma-project/cli/cmd/kyma/version.Version=#{version}
+      -X github.com/kyma-project/cli/cmd/kyma/install.DefaultKymaVersion=#{version}
+      -X github.com/kyma-project/cli/cmd/kyma/upgrade.DefaultKymaVersion=#{version}
+    ].join(" ")
+
+    system "go", "build", *std_go_args, "-o", bin/"kyma", "-ldflags", ldflags, "./cmd"
   end
 
   test do
-    output = shell_output("#{bin}/kyma --help")
-    assert_match "Kyma is a flexible and easy way to connect and extend enterprise applications in a cloud-native world.", output
-
-    output = shell_output("#{bin}/kyma version --client")
-    assert_match "Kyma CLI version", output
-
     touch testpath/"kubeconfig"
-    output = shell_output("#{bin}/kyma install --kubeconfig ./kubeconfig 2>&1", 1)
-    assert_match "invalid configuration", output
+    assert_match "invalid configuration",
+      shell_output("#{bin}/kyma install --kubeconfig ./kubeconfig 2>&1", 1)
   end
 end

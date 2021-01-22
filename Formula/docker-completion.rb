@@ -2,13 +2,14 @@ class DockerCompletion < Formula
   desc "Bash, Zsh and Fish completion for Docker"
   homepage "https://www.docker.com/"
   url "https://github.com/docker/docker-ce.git",
-      :tag      => "v19.03.5",
-      :revision => "633a0ea838f10e000b7c6d6eed1623e6e988b5bb"
+      tag:      "v19.03.14",
+      revision: "5eb3275d4006e4093807c35b4f7776ecd73b13a7"
+  license "Apache-2.0"
 
   bottle :unneeded
 
   conflicts_with "docker",
-    :because => "docker already includes these completion scripts"
+    because: "docker already includes these completion scripts"
 
   def install
     bash_completion.install "components/cli/contrib/completion/bash/docker"

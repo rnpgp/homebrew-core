@@ -1,36 +1,30 @@
-require "language/haskell"
-
 class Futhark < Formula
-  include Language::Haskell::Cabal
-
   desc "Data-parallel functional programming language"
   homepage "https://futhark-lang.org/"
-  url "https://github.com/diku-dk/futhark/archive/v0.13.2.tar.gz"
-  sha256 "51b1c4bf3cac469dabbf66955049480273411cf5eb50da235f0a4c96cffe2b8e"
+  url "https://github.com/diku-dk/futhark/archive/v0.18.5.tar.gz"
+  sha256 "62e40af86afb357cf443861ae4f10662effff42f2981d103943ea20aefc6d076"
+  license "ISC"
   head "https://github.com/diku-dk/futhark.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ebc6081107afb474297808dc8b632fa237a0e0a8580232077f04409a6561b0c9" => :catalina
-    sha256 "ab8c1168033238ab7ca0ed6ae5855a18943472ac6d69a564ba335428628c9bb3" => :mojave
-    sha256 "2644ffab0014bb6967fe0bc2d4f55bbcb1b7f4f888234420d68f6c9e83027d10" => :high_sierra
+    sha256 "b509a18e2eb41e66a85c7f654a80a6fe58adfca07c46d32b5b50abf92a40d530" => :big_sur
+    sha256 "d1cd16cbd7ea1cedb79facaff8a6e882f379c5e24dd9d9919ca772d686a15717" => :catalina
+    sha256 "42a14f360798bf51d8262706c1b1c36c71a073bb162fa46f5001892db71aec05" => :mojave
   end
 
   depends_on "cabal-install" => :build
   depends_on "ghc" => :build
-  depends_on "hpack" => :build
   depends_on "sphinx-doc" => :build
 
+  uses_from_macos "ncurses"
+  uses_from_macos "zlib"
+
   def install
-    # Futhark provides a cabal.project.freeze for pinning Cabal
-    # dependencies, but this is only picked up by "v2" builds, and
-    # as of this writing, Homebrew still does sandboxed "v1" builds.
-    # Fortunately, the file formats seem to be compatible.
-    mv "cabal.project.freeze", "cabal.config"
-
-    system "hpack"
-
-    install_cabal_package :using => ["alex", "happy"]
+    system "cabal", "v2-update"
+    # Remove the `--constraint` flag at version bump
+    # see https://github.com/ddssff/listlike/issues/8#issuecomment-748985462 for detail
+    system "cabal", "v2-install", *std_cabal_v2_args, "--constraint=bytestring==0.10.10.1"
 
     system "make", "-C", "docs", "man"
     man1.install Dir["docs/_build/man/*.1"]

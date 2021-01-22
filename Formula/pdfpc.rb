@@ -1,15 +1,16 @@
 class Pdfpc < Formula
   desc "Presenter console with multi-monitor support for PDF files"
   homepage "https://pdfpc.github.io/"
-  url "https://github.com/pdfpc/pdfpc/archive/v4.3.4.tar.gz"
-  sha256 "cc3ccd7a23990b76dd6083e774d28f63d726a86db3a7f180b1c90596b735d5ed"
+  url "https://github.com/pdfpc/pdfpc/archive/v4.4.1.tar.gz"
+  sha256 "4adb42fd1844a7e2ab44709dd043ade618c87f2aaec03db64f7ed659e8d3ddad"
+  license "GPL-3.0-or-later"
+  revision 1
   head "https://github.com/pdfpc/pdfpc.git"
 
   bottle do
-    rebuild 1
-    sha256 "b65b794725b5c60423cb97f6283aac5a7e4c348a112aad160605501eed96b7dd" => :catalina
-    sha256 "0549b04e7edd7cb9831d5981fb43ad8e0ae92459f5c00b2e80520f32b6d1bf84" => :mojave
-    sha256 "ab33199fc0198e8ec4fe35811a86d7c475eef84359ed03b42633515731b8542c" => :high_sierra
+    sha256 "b2de1a251cd401445b171247210e1e3a729cd793eeddfe7e725039b4ea9d272c" => :big_sur
+    sha256 "6797e6bfdcff10e4e4b099d28547f608fbbc4aa94c0063d04b0e4d5195924f63" => :catalina
+    sha256 "ceb38afd15133764d031c8abca4aabbd39fb2407bac81e0b0c0d8b9511e249cf" => :mojave
   end
 
   depends_on "cmake" => :build
@@ -19,13 +20,6 @@ class Pdfpc < Formula
   depends_on "libgee"
   depends_on "librsvg"
   depends_on "poppler"
-
-  # Build with recent vala, remove in next release
-  # https://github.com/pdfpc/pdfpc/pull/446
-  patch do
-    url "https://github.com/pdfpc/pdfpc/commit/afd0fc83.diff?full_index=1"
-    sha256 "8f2769696229393fe179b637f261fcf47128f4dd8026446d74e65483f1dbea36"
-  end
 
   def install
     system "cmake", ".", "-DMOVIES=on", *std_cmake_args

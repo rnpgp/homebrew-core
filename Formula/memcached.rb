@@ -1,15 +1,22 @@
 class Memcached < Formula
   desc "High performance, distributed memory object caching system"
   homepage "https://memcached.org/"
-  url "https://www.memcached.org/files/memcached-1.5.20.tar.gz"
-  sha256 "cfd7b023a9cefe7ae8a67184f51d841dbbf97994ed0e8a55e31ee092320ea1e4"
+  url "https://www.memcached.org/files/memcached-1.6.9.tar.gz"
+  sha256 "d5a62ce377314dbffdb37c4467e7763e3abae376a16171e613cbe69956f092d1"
+  license "BSD-3-Clause"
+  head "https://github.com/memcached/memcached.git"
+
+  livecheck do
+    url :homepage
+    regex(/href=.*?memcached[._-]v?(\d+(?:\.\d+){2,})\./i)
+  end
 
   bottle do
     cellar :any
-    rebuild 1
-    sha256 "a03608101a7aa55a32ef05d945e852bfc22cbd4647c5a6d41d7957c022489e02" => :catalina
-    sha256 "cca9f385ec7477a12f787aec8cb0da8a58f83c170e8ded061cbbdff75e158ccf" => :mojave
-    sha256 "893bc856ebe459590a08c6acf9ad863d850413de804ddac8b65d1262c5dc2467" => :high_sierra
+    sha256 "147059ed93b823666bfd59911d7c2ccc51081b16a49ac72edf50efe7beedadc7" => :big_sur
+    sha256 "c18d3d914a52d960a1ad33be43e2ebc35faaf3aca9b2db0fb682989cb5c57693" => :arm64_big_sur
+    sha256 "b816ef4b112d8a01b0b6c1fbf05b2eb4577640e2712ad6c0ce0e87899e246d9a" => :catalina
+    sha256 "e307cfaa852e8fcda1210aadbfa07cb0331640ec7c930e03ac0cc2e98736d70d" => :mojave
   end
 
   depends_on "libevent"
@@ -19,36 +26,36 @@ class Memcached < Formula
     system "make", "install"
   end
 
-  plist_options :manual => "#{HOMEBREW_PREFIX}/opt/memcached/bin/memcached"
+  plist_options manual: "#{HOMEBREW_PREFIX}/opt/memcached/bin/memcached"
 
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>KeepAlive</key>
-      <true/>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/memcached</string>
-        <string>-l</string>
-        <string>localhost</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>WorkingDirectory</key>
-      <string>#{HOMEBREW_PREFIX}</string>
-    </dict>
-    </plist>
-  EOS
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>KeepAlive</key>
+        <true/>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/memcached</string>
+          <string>-l</string>
+          <string>localhost</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>WorkingDirectory</key>
+        <string>#{HOMEBREW_PREFIX}</string>
+      </dict>
+      </plist>
+    EOS
   end
 
   test do
     pidfile = testpath/"memcached.pid"
-    # Assumes port 11211 is not already taken
-    system bin/"memcached", "--listen=localhost:11211", "--daemon", "--pidfile=#{pidfile}"
+    system bin/"memcached", "--listen=localhost:#{free_port}", "--daemon", "--pidfile=#{pidfile}"
     sleep 1
     assert_predicate pidfile, :exist?, "Failed to start memcached daemon"
     pid = (testpath/"memcached.pid").read.chomp.to_i

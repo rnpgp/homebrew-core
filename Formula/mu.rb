@@ -1,19 +1,27 @@
-# Note that odd release numbers indicate unstable releases.
-# Please only submit PRs for [x.x.even] version numbers:
+# NOTE: Odd release numbers indicate unstable releases.
+# Please only submit PRs for [x.even.x] version numbers:
 # https://github.com/djcb/mu/commit/23f4a64bdcdee3f9956a39b9a5a4fd0c5c2370ba
 class Mu < Formula
   desc "Tool for searching e-mail messages stored in the maildir-format"
   homepage "https://www.djcbsoftware.nl/code/mu/"
-  url "https://github.com/djcb/mu/releases/download/1.2/mu-1.2.0.tar.xz"
-  sha256 "f634c7f244dc6844ff71dc3c3e1893e48e193caa9e0e747eba616309775f053a"
-  revision 1
+  url "https://github.com/djcb/mu/archive/1.4.14.tar.gz"
+  sha256 "ecde3b1d3d9e69b089a1b5f9a3feadad28063efe43024d7bbde917dfc4055042"
+  license "GPL-3.0-or-later"
+
+  # We restrict matching to versions with an even-numbered minor version number,
+  # as an odd-numbered minor version number indicates a development version:
+  # https://github.com/djcb/mu/commit/23f4a64bdcdee3f9956a39b9a5a4fd0c5c2370ba
+  livecheck do
+    url :head
+    regex(/^v?(\d+\.\d*[02468](?:\.\d+)*)$/i)
+  end
 
   bottle do
     cellar :any
-    sha256 "c2b2f55ab9d1743afcece35be56a8dece9dbc8a970c19fdd15c36da2c5581dc9" => :catalina
-    sha256 "a8c766c5cfa0951ea3a683ddac460e2c66daa231fb586c2b73f91ddabccdb798" => :mojave
-    sha256 "b005381a23edee1bd9a7f02d5dae3cf4bb4e3bdfb494c17e0b44a817af40dd3a" => :high_sierra
-    sha256 "3cdc7db8c5adafc23cdce44aa0592afe203d770d4c1e226a5bf9e6243b9ed3ff" => :sierra
+    sha256 "969b3056d8a1cded39deaac654b26fe12437ea50c4a501473335fcfb03be1a1b" => :big_sur
+    sha256 "2b0fa10bca63184c3336fea267f5af265898d36be20debc56f3b65b92a6fd1a4" => :arm64_big_sur
+    sha256 "c51dc9590ecf23ca37cc2c656180abfd5bb71f8df62aed5bd60fd1387f050ce7" => :catalina
+    sha256 "a86ee68f010d6df647a8c87194088fcf248d486d1069ac8f27d0f40563f109cc" => :mojave
   end
 
   head do
@@ -33,6 +41,8 @@ class Mu < Formula
   depends_on "gmime"
   depends_on "xapian"
 
+  uses_from_macos "texinfo" => :build
+
   def install
     system "autoreconf", "-ivf"
     system "./configure", "--disable-dependency-tracking",
@@ -40,13 +50,6 @@ class Mu < Formula
                           "--with-lispdir=#{elisp}"
     system "make"
     system "make", "install"
-  end
-
-  def caveats; <<~EOS
-    Existing mu users are recommended to run the following after upgrading:
-
-      mu index --rebuild
-  EOS
   end
 
   # Regression test for:
@@ -75,17 +78,17 @@ class Mu < Formula
       This used to happen outdoors. It was more fun then.
     EOS
 
-    system "#{bin}/mu", "index",
-                        "--muhome",
-                        testpath,
-                        "--maildir=#{testpath}"
+    system "#{bin}/mu", "init", "--muhome=#{testpath}", "--maildir=#{testpath}"
+    system "#{bin}/mu", "index", "--muhome=#{testpath}"
 
-    mu_find = "#{bin}/mu find --muhome #{testpath} "
+    mu_find = "#{bin}/mu find --muhome=#{testpath} "
     find_message = "#{mu_find} msgid:2222222222@example.com"
     find_message_and_related = "#{mu_find} --include-related msgid:2222222222@example.com"
 
     assert_equal 1, shell_output(find_message).lines.count
-    assert_equal 2, shell_output(find_message_and_related).lines.count,
-                 "You tripped over https://github.com/djcb/mu/issues/380\n\t--related doesn't work. Everything else should"
+    assert_equal 2, shell_output(find_message_and_related).lines.count, <<~EOS
+      You tripped over https://github.com/djcb/mu/issues/380
+        --related doesn't work. Everything else should
+    EOS
   end
 end

@@ -1,14 +1,20 @@
 class Gtkx3 < Formula
   desc "Toolkit for creating graphical user interfaces"
   homepage "https://gtk.org/"
-  url "https://download.gnome.org/sources/gtk+/3.24/gtk+-3.24.12.tar.xz"
-  sha256 "1384eba5614fed160044ae0d32369e3df7b4f517b03f4b1f24d383e528f4be83"
-  revision 1
+  url "https://download.gnome.org/sources/gtk+/3.24/gtk+-3.24.24.tar.xz"
+  sha256 "cc9d4367c55b724832f6b09ab85481738ea456871f0381768a6a99335a98378a"
+  license "LGPL-2.0-or-later"
+
+  livecheck do
+    url :stable
+    regex(/gtk\+[._-](3\.([0-8]\d*?)?[02468](?:\.\d+)*?)\.t/i)
+  end
 
   bottle do
-    sha256 "4ccac8c178075606f275a258c215d6b805e184335306d9a78cd4b7c7fbf4a13b" => :catalina
-    sha256 "5198ebdb8d360fbc1d70b980f99b189348db793aa7a694c79cd7445f2ed7e6dd" => :mojave
-    sha256 "23682d476062f2ca5324f2ba584f44712b4d3264c1c9b70d452fead937a77346" => :high_sierra
+    sha256 "37eb8aa72b11ef7efbb4e70f3cd0b1881a925c41c223e662cc106739f022fe07" => :big_sur
+    sha256 "c08c5a7c58a052a0b5105a2b667a4a5404b52d43c1c0ec741dc83e83673471ff" => :arm64_big_sur
+    sha256 "844d9b4a4c8fc50c29fa4a9464e6a0ae8f22299e7162dfa18a6b048e6aaa1b9a" => :catalina
+    sha256 "798c425db2e840d23c95298fb44cadbd5b1d944240a3ccd0ae369386b3120ca9" => :mojave
   end
 
   depends_on "docbook" => :build
@@ -25,14 +31,10 @@ class Gtkx3 < Formula
   depends_on "libepoxy"
   depends_on "pango"
 
-  patch do
-    url "https://gitlab.gnome.org/GNOME/gtk/commit/fa07007389c9662b654680464cf88d8894e4e64d.diff"
-    sha256 "995173a076e6984789e862e81b332fa4b3c5794c113251c66b6d8708a1614d8a"
-  end
+  uses_from_macos "libxslt" => :build # for xsltproc
 
   def install
-    args = %W[
-      --prefix=#{prefix}
+    args = std_meson_args + %w[
       -Dx11_backend=false
       -Dquartz_backend=true
       -Dgtk_doc=false
@@ -123,5 +125,7 @@ class Gtkx3 < Formula
     ]
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
+    # include a version check for the pkg-config files
+    assert_match version.to_s, shell_output("cat #{lib}/pkgconfig/gtk+-3.0.pc").strip
   end
 end

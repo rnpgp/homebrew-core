@@ -1,15 +1,16 @@
 class Corral < Formula
   desc "Dependency manager for the Pony language"
   homepage "https://github.com/ponylang/corral"
-  url "https://github.com/ponylang/corral/archive/0.3.0.tar.gz"
-  sha256 "5e2f825dd67a060623bdbd992bcdf2d4a377a6d491f4bd60e8754f60df33e578"
+  url "https://github.com/ponylang/corral/archive/0.4.0.tar.gz"
+  sha256 "5c74eef22c8481330bf23fdf7f8477667c56c3ef4442f1490e80795ddcf3be7f"
+  license "BSD-2-Clause"
   head "https://github.com/ponylang/corral.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3fe16cd9f427551d22028457f9571f666053c4b39a528543e68a917643427a41" => :catalina
-    sha256 "3fe16cd9f427551d22028457f9571f666053c4b39a528543e68a917643427a41" => :mojave
-    sha256 "449fd9454d9e5272a30d9ea909e506638c5e7d633c1c7d683f2592ce7e9fc487" => :high_sierra
+    sha256 "bf397d0dbb3a63d8347546fa082a854b196f39a2a23263c00eb4fda8d0265a1a" => :catalina
+    sha256 "309858fccac2b1015620240276b2bb53955ea37160632231d88d0deff70931f9" => :mojave
+    sha256 "7a8958c3ce14b94054ca831330f459e84848eac1a6fab7298b02abda185a974f" => :high_sierra
   end
 
   depends_on "ponyc"

@@ -1,13 +1,20 @@
 class Libsecret < Formula
   desc "Library for storing/retrieving passwords and other secrets"
   homepage "https://wiki.gnome.org/Projects/Libsecret"
-  url "https://download.gnome.org/sources/libsecret/0.20/libsecret-0.20.0.tar.xz"
-  sha256 "f1187370b453106af878e30c284a121ba0c513da8bb4170b329d66e250bdae43"
+  url "https://download.gnome.org/sources/libsecret/0.20/libsecret-0.20.4.tar.xz"
+  sha256 "325a4c54db320c406711bf2b55e5cb5b6c29823426aa82596a907595abb39d28"
+  license "LGPL-2.1-or-later"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
-    sha256 "c5b402e50ce34774da56df8ef021b4dee8426c32352c2dedd9acb75d9046f8cf" => :catalina
-    sha256 "b2c9a3582a2b19b01614464a31c87c8f97e77f79c72ea32b148110d75a5a8c79" => :mojave
-    sha256 "13610deefbb44c35439a4e518815e41c813eb9e3da14e2106396eb6955f67596" => :high_sierra
+    sha256 "68da058738e04fd8a7ec9713df527afec9dc8076a219548dc194184df337fe8a" => :big_sur
+    sha256 "115ff8e5af3b0bffd370a47d7165664dda193b4a2ac00e2054b455cbd77e6d6e" => :arm64_big_sur
+    sha256 "8fc40fdf1fda5a1bd12661b96a1b0398cc0b600e9f43ef44384ffa82fa6b3133" => :catalina
+    sha256 "80fa9108466d6fac5f752ce926a9f6175e4f701764d2b077a3cdee0109be8ba6" => :mojave
+    sha256 "9663806ffb17b3c50eb015c43b2763ff47e12624e56d694d454f238748ea17e2" => :high_sierra
   end
 
   depends_on "docbook-xsl" => :build
@@ -17,11 +24,6 @@ class Libsecret < Formula
   depends_on "vala" => :build
   depends_on "glib"
   depends_on "libgcrypt"
-
-  patch do
-    url "https://gitlab.gnome.org/GNOME/libsecret/commit/cf21ad50b62f7c8e4b22ef374f0a73290a99bdb8.patch"
-    sha256 "e46be298953abdd0e161c933250dbc7aed042d62371850e0c33f164ced92ddfd"
-  end
 
   def install
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"

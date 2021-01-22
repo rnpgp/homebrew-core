@@ -1,15 +1,22 @@
 class Fluxctl < Formula
   desc "Command-line tool to access Weave Flux, the Kubernetes GitOps operator"
-  homepage "https://github.com/weaveworks/flux"
-  url "https://github.com/weaveworks/flux.git",
-      :tag      => "1.17.1",
-      :revision => "0d3f1d3a2fa0655e2dc297793328d182fdf9e710"
+  homepage "https://github.com/fluxcd/flux"
+  url "https://github.com/fluxcd/flux.git",
+      tag:      "1.21.1",
+      revision: "930a2cc43487033ac70e38f7389a2a573a55fdf5"
+  license "Apache-2.0"
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "8c8bcbe327c1c6a295dcd0a84354e168ee0e28557979c0629084023ea2fa829f" => :catalina
-    sha256 "f8e3234c0e7263ba982517a0247db4c48fb2baaf5d43e97070ff9cfa5c99acbd" => :mojave
-    sha256 "546f03fdd9dd4ce93466b5ae3030f9c061fee102e5fac4770f4151d09f4419dc" => :high_sierra
+    sha256 "53227e9833e63f339d03dc38c1b542debe9bc00cc122e40b128f37be43a7b03f" => :big_sur
+    sha256 "21279a68c5e174c9dc901b9de1782716cbc7130d85259ac24234e339a2573945" => :arm64_big_sur
+    sha256 "18d0f73be5406c24147a4092f05aed13788032a51c8acb7e3a62709889d2313c" => :catalina
+    sha256 "26df944d2b25badcf9cb4a742b442f6e40657be2987b86ad0be7e7cf0296ebf0" => :mojave
   end
 
   depends_on "go" => :build
@@ -17,7 +24,6 @@ class Fluxctl < Formula
   def install
     cd buildpath/"cmd/fluxctl" do
       system "go", "build", "-ldflags", "-s -w -X main.version=#{version}", "-trimpath", "-o", bin/"fluxctl"
-      prefix.install_metafiles
     end
   end
 
@@ -33,10 +39,10 @@ class Fluxctl < Formula
     # about a missing .kube/config file.
     require "pty"
     require "timeout"
-    r, _w, pid = PTY.spawn("#{bin}/fluxctl sync", :err=>:out)
+    r, _w, pid = PTY.spawn("#{bin}/fluxctl sync", err: :out)
     begin
       Timeout.timeout(5) do
-        assert_match r.gets.chomp, "Error: Could not load kubernetes configuration file: invalid configuration: no configuration has been provided"
+        assert_match "Error: Could not load kubernetes configuration file", r.gets.chomp
         Process.wait pid
         assert_equal 1, $CHILD_STATUS.exitstatus
       end

@@ -1,32 +1,35 @@
 class Git < Formula
   desc "Distributed revision control system"
   homepage "https://git-scm.com"
-  url "https://www.kernel.org/pub/software/scm/git/git-2.25.0.tar.xz"
-  sha256 "c060291a3ffb43d7c99f4aa5c4d37d3751cf6bca683e7344ea407ea504d9a8d0"
-  head "https://github.com/git/git.git", :shallow => false
+  # NOTE: Please keep these values in sync with git-gui.rb when updating.
+  url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.30.0.tar.xz"
+  sha256 "55735021109565721af805af382c45cce73c3cfaa59daad22443d1477d334d19"
+  license "GPL-2.0-only"
+  head "https://github.com/git/git.git", shallow: false
+
+  livecheck do
+    url "https://www.kernel.org/pub/software/scm/git/"
+    regex(/href=.*?git[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
 
   bottle do
-    sha256 "8b55d36d8e8465ce563f6d0c969e3dec7b3b0092534596345b0d9450dee72729" => :catalina
-    sha256 "764785c78dbcb098b5673772503e01f2946fa37f97bebe257ee81ee416504879" => :mojave
-    sha256 "3bcfa1937f04364e1590e6b5abe9c8cda3dc0e035690eeca6c57b6ce8cb981cc" => :high_sierra
+    sha256 "bd4dd57a4740df3c596377954d45fcf2b08db83f7d8853f5361db1d158a6bdb8" => :big_sur
+    sha256 "7e0f30621e1a5be89bf604eacdca8de9a79bd16c273a1d6f4dd39c6f806d4b98" => :arm64_big_sur
+    sha256 "091c6e512e9dd5c3373f75a9b495dbe42f9852d93dab4c72d3fb2c8e01738953" => :catalina
+    sha256 "bd96accac4e05c8799b062772ab943a10e9ff25784f2828c5c25b2debd3d2f13" => :mojave
   end
 
   depends_on "gettext"
   depends_on "pcre2"
 
-  if MacOS.version < :yosemite
-    depends_on "openssl@1.1"
-    depends_on "curl"
-  end
-
   resource "html" do
-    url "https://www.kernel.org/pub/software/scm/git/git-htmldocs-2.25.0.tar.xz"
-    sha256 "a99d83260ff903102bf7556e673c1535e4b0fb276a718a5d2f32b501e39a000d"
+    url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-htmldocs-2.30.0.tar.xz"
+    sha256 "820132c62ade3df12b4178857cfc5c92276b847b2307a5f7f4d24c27774f962f"
   end
 
   resource "man" do
-    url "https://www.kernel.org/pub/software/scm/git/git-manpages-2.25.0.tar.xz"
-    sha256 "d396777bdd69dc2db06a49da6971a883fd95fe16ad1dcca7e6b491686658c8bd"
+    url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-manpages-2.30.0.tar.xz"
+    sha256 "7b2b8405d5bdd149e3891617053de37f7e8d5a5b3834317a5af9f30ccc93cf76"
   end
 
   resource "Net::SMTP::SSL" do
@@ -38,7 +41,6 @@ class Git < Formula
     # If these things are installed, tell Git build system not to use them
     ENV["NO_FINK"] = "1"
     ENV["NO_DARWIN_PORTS"] = "1"
-    ENV["NO_R_TO_GCC_LINKER"] = "1" # pass arguments to LD correctly
     ENV["PYTHON_PATH"] = which("python")
     ENV["PERL_PATH"] = which("perl")
     ENV["USE_LIBPCRE2"] = "1"
@@ -46,7 +48,7 @@ class Git < Formula
     ENV["LIBPCREDIR"] = Formula["pcre2"].opt_prefix
     ENV["V"] = "1" # build verbosely
 
-    perl_version = Utils.popen_read("perl --version")[/v(\d+\.\d+)(?:\.\d+)?/, 1]
+    perl_version = Utils.safe_popen_read("perl", "--version")[/v(\d+\.\d+)(?:\.\d+)?/, 1]
 
     ENV["PERLLIB_EXTRA"] = %W[
       #{MacOS.active_developer_dir}
@@ -56,10 +58,6 @@ class Git < Formula
       "#{p}/Library/Perl/#{perl_version}/darwin-thread-multi-2level"
     end.join(":")
 
-    unless quiet_system ENV["PERL_PATH"], "-e", "use ExtUtils::MakeMaker"
-      ENV["NO_PERL_MAKEMAKER"] = "1"
-    end
-
     # Ensure we are using the correct system headers (for curl) to workaround
     # mismatched Xcode/CLT versions:
     # https://github.com/Homebrew/homebrew-core/issues/46466
@@ -67,20 +65,20 @@ class Git < Formula
       ENV["HOMEBREW_SDKROOT"] = MacOS::CLT.sdk_path(MacOS.version)
     end
 
+    # The git-gui and gitk tools are installed by a separate formula (git-gui)
+    # to avoid a dependency on tcl-tk and to avoid using the broken system
+    # tcl-tk (see https://github.com/Homebrew/homebrew-core/issues/36390)
+    # This is done by setting the NO_TCLTK make variable.
     args = %W[
       prefix=#{prefix}
       sysconfdir=#{etc}
       CC=#{ENV.cc}
       CFLAGS=#{ENV.cflags}
       LDFLAGS=#{ENV.ldflags}
+      NO_TCLTK=1
+      NO_OPENSSL=1
+      APPLE_COMMON_CRYPTO=1
     ]
-
-    if MacOS.version < :yosemite
-      openssl_prefix = Formula["openssl@1.1"].opt_prefix
-      args += %W[NO_APPLE_COMMON_CRYPTO=1 OPENSSLDIR=#{openssl_prefix}]
-    else
-      args += %w[NO_OPENSSL=1 APPLE_COMMON_CRYPTO=1]
-    end
 
     system "make", "install", *args
 
@@ -132,11 +130,6 @@ class Git < Formula
     chmod 0644, Dir["#{share}/doc/git-doc/**/*.{html,txt}"]
     chmod 0755, Dir["#{share}/doc/git-doc/{RelNotes,howto,technical}"]
 
-    # To avoid this feature hooking into the system OpenSSL, remove it
-    if MacOS.version >= :yosemite
-      rm "#{libexec}/git-core/git-imap-send"
-    end
-
     # git-send-email needs Net::SMTP::SSL
     resource("Net::SMTP::SSL").stage do
       (share/"perl5").install "lib/Net"
@@ -157,10 +150,18 @@ class Git < Formula
     etc.install "gitconfig"
   end
 
+  def caveats
+    <<~EOS
+      The Tcl/Tk GUIs (e.g. gitk, git-gui) are now in the `git-gui` formula.
+    EOS
+  end
+
   test do
     system bin/"git", "init"
     %w[haunted house].each { |f| touch testpath/f }
     system bin/"git", "add", "haunted", "house"
+    system bin/"git", "config", "user.name", "'A U Thor'"
+    system bin/"git", "config", "user.email", "author@example.com"
     system bin/"git", "commit", "-a", "-m", "Initial Commit"
     assert_equal "haunted\nhouse", shell_output("#{bin}/git ls-files").strip
 
@@ -168,9 +169,10 @@ class Git < Formula
     %w[foo bar].each { |f| touch testpath/f }
     system bin/"git", "add", "foo", "bar"
     system bin/"git", "commit", "-a", "-m", "Second Commit"
-    assert_match "Authentication Required", shell_output(
-      "#{bin}/git send-email --to=dev@null.com --smtp-server=smtp.gmail.com " \
-      "--smtp-encryption=tls --confirm=never HEAD^ 2>&1", 255
+    assert_match "Authentication Required", pipe_output(
+      "#{bin}/git send-email --from=test@example.com --to=dev@null.com " \
+      "--smtp-server=smtp.gmail.com --smtp-server-port=587 " \
+      "--smtp-encryption=tls --confirm=never HEAD^ 2>&1",
     )
   end
 end

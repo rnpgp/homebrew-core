@@ -1,27 +1,27 @@
-require "language/haskell"
-
 class Texmath < Formula
-  include Language::Haskell::Cabal
-
   desc "Haskell library for converting LaTeX math to MathML"
   homepage "https://johnmacfarlane.net/texmath.html"
-  url "https://hackage.haskell.org/package/texmath-0.12/texmath-0.12.tar.gz"
-  sha256 "5e1915a87774428733575cd47ce1f4050a70ab30c8518238e320036e877a8125"
+  url "https://hackage.haskell.org/package/texmath-0.12.1/texmath-0.12.1.tar.gz"
+  sha256 "47d821a885cbdd7f1b4d020f4699636abc345a55ef28793be0c0792ec913e5de"
+  license "GPL-2.0-or-later"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "03203284dd76815b6ab59b24ae4730db26ca4ad37cceb09b6d8b92b598bfd1eb" => :catalina
-    sha256 "eb7534eeb2e36f93cc7262e446e908918b87a0aeedac653a7d32212a964462b2" => :mojave
-    sha256 "f2054064d399c56953d8cadedf9a23d77d251c5229279bbec929816acbfd6cc2" => :high_sierra
+    sha256 "f091dafb8c9967d2a47b85f45361e60eb7c85b88b8346d76cb2db8a757a1f776" => :big_sur
+    sha256 "2769946483f9d19111f011337b7a25f2cf46145ddc86990fe58c311194be0eb8" => :catalina
+    sha256 "a155b6bad3842722d5bdbe2fa22be5c10aa191ab44ebaa63000a921acef24b1f" => :mojave
   end
 
   depends_on "cabal-install" => :build
   depends_on "ghc" => :build
 
   def install
-    install_cabal_package "--enable-tests", :flags => ["executable"] do
-      system "cabal", "test"
-    end
+    system "cabal", "v2-update"
+    system "cabal", "v2-install", *std_cabal_v2_args, "-fexecutable"
   end
 
   test do

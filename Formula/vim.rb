@@ -1,31 +1,35 @@
 class Vim < Formula
   desc "Vi 'workalike' with many additional features"
   homepage "https://www.vim.org/"
-  # vim should only be updated every 50 releases on multiples of 50
-  url "https://github.com/vim/vim/archive/v8.2.0100.tar.gz"
-  sha256 "13cc4d12fd6ebabc5f05a456f8f9451ae591a3473b87fda1d3a4f530123ae3d7"
+  # vim should only be updated every 25 releases on multiples of 25
+  url "https://github.com/vim/vim/archive/v8.2.2375.tar.gz"
+  sha256 "54d6c1aa46857c734f1a5f9f89414046266d678bd71ad94f7a961a2547ec0eda"
+  license "Vim"
   head "https://github.com/vim/vim.git"
 
   bottle do
-    sha256 "d97a2167400c6b767082eee3e74963ecfe52a9db4af209795ecdab8e0f1a6fd4" => :catalina
-    sha256 "c9d5b4382dc93c7bcd9bf70db70843a22c1a1c2f94ec89bf6da0ade006c59afb" => :mojave
-    sha256 "8ab12f766c03612a9fbe23ed245ffb1dcb484e53cbef15e7a157fb6596eedb8a" => :high_sierra
+    sha256 "983d63260851c82872a500a12f44d575ad1b7d950e61189c03a0dea26e644eeb" => :big_sur
+    sha256 "da846b961ed511c2ecefb20dd43a00c55f16b8acc72ba71299cc61e583126def" => :arm64_big_sur
+    sha256 "e47bcbc752b4b6f0410581fcde694ce2b204d0920331c6523f5b36c25492d678" => :catalina
+    sha256 "97af9cd9a17638b54af8d5611b6375a983a0f30175426fa06106e473ce0229d7" => :mojave
   end
 
   depends_on "gettext"
   depends_on "lua"
   depends_on "perl"
-  depends_on "python"
+  depends_on "python@3.9"
   depends_on "ruby"
 
+  uses_from_macos "ncurses"
+
   conflicts_with "ex-vi",
-    :because => "vim and ex-vi both install bin/ex and bin/view"
+    because: "vim and ex-vi both install bin/ex and bin/view"
 
   conflicts_with "macvim",
-    :because => "vim and macvim both install vi* binaries"
+    because: "vim and macvim both install vi* binaries"
 
   def install
-    ENV.prepend_path "PATH", Formula["python"].opt_libexec/"bin"
+    ENV.prepend_path "PATH", Formula["python@3.9"].opt_libexec/"bin"
 
     # https://github.com/Homebrew/homebrew-core/pull/1046
     ENV.delete("SDKROOT")
@@ -43,9 +47,9 @@ class Vim < Formula
                           "--mandir=#{man}",
                           "--enable-multibyte",
                           "--with-tlib=ncurses",
+                          "--with-compiledby=Homebrew",
                           "--enable-cscope",
                           "--enable-terminal",
-                          "--with-compiledby=Homebrew",
                           "--enable-perlinterp",
                           "--enable-rubyinterp",
                           "--enable-python3interp",

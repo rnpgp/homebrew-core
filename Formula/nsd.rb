@@ -1,13 +1,23 @@
 class Nsd < Formula
   desc "Name server daemon"
   homepage "https://www.nlnetlabs.nl/projects/nsd/"
-  url "https://www.nlnetlabs.nl/downloads/nsd/nsd-4.2.4.tar.gz"
-  sha256 "9ebd6d766765631a56c0eb332eac26b310fa39f662e5582c8210488cf91ef27c"
+  url "https://www.nlnetlabs.nl/downloads/nsd/nsd-4.3.4.tar.gz"
+  sha256 "3be834a97151a7ba8185e46bc37ff12c2f25f399755ae8a2d0e3711801528b50"
+  license "BSD-3-Clause"
+
+  # We check the GitHub repo tags instead of
+  # https://www.nlnetlabs.nl/downloads/nsd/ since the first-party site has a
+  # tendency to lead to an `execution expired` error.
+  livecheck do
+    url "https://github.com/NLnetLabs/nsd.git"
+    regex(/^NSD[._-]v?(\d+(?:[-_.]\d+)+).REL$/i)
+  end
 
   bottle do
-    sha256 "a1f78501e36816697c037ff8d08672971b8aefc84ee5afdad76382c5690ed4c0" => :catalina
-    sha256 "365d92511cc39d4bcf0b901b2397d3e101a8e33a5d696c7bcda59063171799c6" => :mojave
-    sha256 "780d020fd1f68ef2c132e6cd52ec8989b5f593b28ecf8a31515105566fd70598" => :high_sierra
+    sha256 "89235887c73372327a0f4c372d5b93e5fbccfeb6bde079d02d4c932b1982a020" => :big_sur
+    sha256 "af4902f97a90e7b5a011268389edb36d95b0df049d8f0faaf87cb6966abca30c" => :arm64_big_sur
+    sha256 "b21b9f1ad17d10473d8acc41b37d75add960de933ae5c7569eec2a1d2a9be79c" => :catalina
+    sha256 "aa51669ef28ff75d2eb3fb4dd9dc02dc905b0bb96c78a6740c54296e0b4626ed" => :mojave
   end
 
   depends_on "libevent"

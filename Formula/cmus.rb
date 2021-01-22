@@ -1,17 +1,16 @@
 class Cmus < Formula
   desc "Music player with an ncurses based interface"
   homepage "https://cmus.github.io/"
-  url "https://github.com/cmus/cmus/archive/v2.8.0.tar.gz"
-  sha256 "756ce2c6241b2104dc19097488225de559ac1802a175be0233cfb6fbc02f3bd2"
-  revision 1
+  url "https://github.com/cmus/cmus/archive/v2.9.0.tar.gz"
+  sha256 "e7ea7f5ec52b991cf378a9caf19e479be16a165a5b26adca058de711e72ad2a0"
+  license "GPL-2.0-or-later"
   head "https://github.com/cmus/cmus.git"
 
   bottle do
-    rebuild 1
-    sha256 "d89a46acdec0e5830d41d2d40419d62fe555f34b99f93bf758e749e023e9b294" => :catalina
-    sha256 "5597b87c7fcdceec789103df12ae89408e69f98668da522b7ee6a908e622c290" => :mojave
-    sha256 "38f6dda244d82bc960b7e1c65e2e0316c2cde6cc61174bad763b7243e6f88ad8" => :high_sierra
-    sha256 "42cab3ddb96e7b36b2b8cf67d2384adea5169e2955841c35166aece5afcd9329" => :sierra
+    sha256 "1077999cc7e6fdab9e0ed403d5c4b21bf67d9a4ccf2118807d25d36eae9835a6" => :big_sur
+    sha256 "d4d1567d3a05c37d7f1764feac658bb48f96b008d01d28e2e14a332c76ce0062" => :arm64_big_sur
+    sha256 "d4e22535e6cef5013bf8c2a8e02acbd3519a3f7d0293118acd4bd3949224f7a1" => :catalina
+    sha256 "0d62c91d720131fb266305b5d91b3286572c867ef190bb5116ef9766534d3ca1" => :mojave
   end
 
   depends_on "pkg-config" => :build
@@ -26,7 +25,8 @@ class Cmus < Formula
   depends_on "opusfile"
 
   def install
-    system "./configure", "prefix=#{prefix}", "mandir=#{man}"
+    system "./configure", "prefix=#{prefix}", "mandir=#{man}",
+                          "CONFIG_WAVPACK=n", "CONFIG_MPC=n"
     system "make", "install"
   end
 

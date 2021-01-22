@@ -1,54 +1,50 @@
 class Deno < Formula
-  desc "Command-line JavaScript / TypeScript engine"
+  desc "Secure runtime for JavaScript and TypeScript"
   homepage "https://deno.land/"
-  url "https://github.com/denoland/deno/releases/download/v0.30.0/deno_src.tar.gz"
-  version "0.30.0"
-  sha256 "34fed174ed48b556f57d9727c7ee429518a8dd4c06993d51767039745ca1e6d5"
+  url "https://github.com/denoland/deno/releases/download/v1.6.0/deno_src.tar.gz"
+  sha256 "60491d842e04ce162face61bb8857bf18a41726afbcbcd9fa532055ace7431ae"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "cde94edda76a7d39ce8c1bbef540a1c9d09ad7f5cb8fa99030726a5ed9df108d" => :catalina
-    sha256 "1790d5321ec0bbe25b1104ca9248a363ffd54bc2de382235a2ab172ee0b39556" => :mojave
-    sha256 "9cce02d01848dc36dae9dc1b48c661979b01949a6f8e4b18c623e9a7a8021302" => :high_sierra
+    sha256 "f57ffbf236768e798bda681cf9d6809752fb53763469c37164ab7e5bf71d98ef" => :big_sur
+    sha256 "6a100d4b0384eae1eec6bb8bd52587b99633d13a07ad8811759216aef45366db" => :catalina
+    sha256 "1bb8ada642868d8741e44316c3b7d69b6a2bd1741d4653d5b19f6c6749e5c07e" => :mojave
   end
 
-  depends_on "llvm" => :build if DevelopmentTools.clang_build_version < 1100
-  depends_on "ninja" => :build
+  depends_on "llvm" => :build
   depends_on "rust" => :build
+  depends_on xcode: ["10.0", :build] # required by v8 7.9+
+  depends_on :macos # Due to Python 2 (see https://github.com/denoland/deno/issues/2893)
 
-  depends_on :xcode => ["10.0", :build] # required by v8 7.9+
+  uses_from_macos "xz"
 
-  resource "gn" do
-    url "https://gn.googlesource.com/gn.git",
-      :revision => "a5bcbd726ac7bd342ca6ee3e3a006478fd1f00b5"
+  # Remove at next version bump. Check that new release includes:
+  # https://github.com/denoland/deno/pull/8718
+  patch do
+    url "https://github.com/denoland/deno/commit/cea42bec3272a8020f1d94afcf1a4cd7e3985553.patch?full_index=1"
+    sha256 "640ece7aab8e7486ea0ec4bfd29ac7e980822a57d12123e802d022bdc7bbaed7"
   end
 
   def install
-    # Build gn from source (used as a build tool here)
-    (buildpath/"gn").install resource("gn")
-    cd "gn" do
-      system "python", "build/gen.py"
-      system "ninja", "-C", "out/", "gn"
-    end
-
     # env args for building a release build with our clang, ninja and gn
     ENV["GN"] = buildpath/"gn/out/gn"
-    if DevelopmentTools.clang_build_version < 1100
-      # build with llvm and link against system libc++ (no runtime dep)
-      ENV["CLANG_BASE_PATH"] = Formula["llvm"].prefix
-      ENV.remove "HOMEBREW_LIBRARY_PATHS", Formula["llvm"].opt_lib
-    else # build with system clang
-      ENV["CLANG_BASE_PATH"] = "/usr/"
-    end
+    # build rusty_v8 from source
+    ENV["V8_FROM_SOURCE"] = "1"
+    # overwrite Chromium minimum sdk version of 10.15
+    ENV["FORCE_MAC_SDK_MIN"] = "10.13"
+    # build with llvm and link against system libc++ (no runtime dep)
+    ENV["CLANG_BASE_PATH"] = Formula["llvm"].prefix
+    ENV.remove "HOMEBREW_LIBRARY_PATHS", Formula["llvm"].opt_lib
 
     cd "cli" do
-      system "cargo", "install", "-vv", "--locked", "--root", prefix, "--path", "."
+      system "cargo", "install", "-vv", *std_cargo_args
     end
 
     # Install bash and zsh completion
-    output = Utils.popen_read("#{bin}/deno completions bash")
+    output = Utils.safe_popen_read("#{bin}/deno", "completions", "bash")
     (bash_completion/"deno").write output
-    output = Utils.popen_read("#{bin}/deno completions zsh")
+    output = Utils.safe_popen_read("#{bin}/deno", "completions", "zsh")
     (zsh_completion/"_deno").write output
   end
 
@@ -56,9 +52,9 @@ class Deno < Formula
     (testpath/"hello.ts").write <<~EOS
       console.log("hello", "deno");
     EOS
-    hello = shell_output("#{bin}/deno run hello.ts")
-    assert_includes hello, "hello deno"
-    cat = shell_output("#{bin}/deno run --allow-read=#{testpath} https://deno.land/std/examples/cat.ts #{testpath}/hello.ts")
-    assert_includes cat, "console.log"
+    assert_match "hello deno", shell_output("#{bin}/deno run hello.ts")
+    assert_match "console.log",
+      shell_output("#{bin}/deno run --allow-read=#{testpath} https://deno.land/std@0.50.0/examples/cat.ts " \
+                   "#{testpath}/hello.ts")
   end
 end

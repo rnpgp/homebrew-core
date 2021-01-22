@@ -1,15 +1,23 @@
 class MinimalRacket < Formula
   desc "Modern programming language in the Lisp/Scheme family"
   homepage "https://racket-lang.org/"
-  url "https://mirror.racket-lang.org/installers/7.5/racket-minimal-7.5-src-builtpkgs.tgz"
-  sha256 "232d53aef4233a1f50325da0e6455f84b77eb0829f8184e1219d0382c066073a"
+  url "https://mirror.racket-lang.org/installers/7.9/racket-minimal-7.9-src-builtpkgs.tgz"
+  sha256 "85b201aebc1ad1ec98ac590e18052d7ef8a81af280244d00ca1c28e8543b3fe9"
+  license any_of: ["MIT", "Apache-2.0"]
+  revision 1
+
+  livecheck do
+    url "https://download.racket-lang.org/all-versions.html"
+    regex(/>Version ([\d.]+)/i)
+  end
 
   bottle do
-    cellar :any
-    sha256 "70ea8d21e62a5843b6c07cf46269ea9458001f6111b4a6c07aa5ba777ccfa87e" => :catalina
-    sha256 "68d761a6679fddaf422e0fbec5897116ca409e50f12aafb3589a06586403caaa" => :mojave
-    sha256 "938471c9139a10efa9c4b6f7a5d4955f7e53a1f43578662f366102086a9ed33c" => :high_sierra
+    sha256 "e505c77a1703d75d214e081250cff9cbdbb13d604f8995703bd96f5a5454803d" => :big_sur
+    sha256 "68ce8bdaed9890086696fe63ce655c994848e58da24040363441bdc6eaa0d9d6" => :catalina
+    sha256 "4fd0070df83c2d0761bc64e31b479f776f9cee55fe51a770811748706742e528" => :mojave
   end
+
+  uses_from_macos "libffi"
 
   # these two files are amended when (un)installing packages
   skip_clean "lib/racket/launchers.rktd", "lib/racket/mans.rktd"
@@ -28,6 +36,7 @@ class MinimalRacket < Formula
         --prefix=#{prefix}
         --mandir=#{man}
         --sysconfdir=#{etc}
+        --enable-useprefix
       ]
 
       system "./configure", *args
@@ -36,14 +45,15 @@ class MinimalRacket < Formula
     end
   end
 
-  def caveats; <<~EOS
-    This is a minimal Racket distribution.
-    If you want to build the DrRacket IDE, you may run:
-      raco pkg install --auto drracket
+  def caveats
+    <<~EOS
+      This is a minimal Racket distribution.
+      If you want to build the DrRacket IDE, you may run:
+        raco pkg install --auto drracket
 
-    The full Racket distribution is available as a cask:
-      brew cask install racket
-  EOS
+      The full Racket distribution is available as a cask:
+        brew install --cask racket
+    EOS
   end
 
   test do

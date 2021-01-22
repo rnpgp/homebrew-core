@@ -1,13 +1,20 @@
 class Mariadb < Formula
   desc "Drop-in replacement for MySQL"
   homepage "https://mariadb.org/"
-  url "https://downloads.mariadb.com/MariaDB/mariadb-10.4.11/source/mariadb-10.4.11.tar.gz"
-  sha256 "4c076232b99433b09eb3c6d62f607192b3474d022703699b8f6aef4e79de3fb9"
+  url "https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/source/mariadb-10.5.8.tar.gz"
+  sha256 "eb4824f6f2c532cd3fc6a6bce7bf78ea7c6b949f8bdd07656b2c84344e757be8"
+  license "GPL-2.0-only"
+
+  livecheck do
+    url "https://downloads.mariadb.org/"
+    regex(/Download v?(\d+(?:\.\d+)+) Stable Now/i)
+  end
 
   bottle do
-    sha256 "0f630795af6c307a0d301aefd877a7ff61a35d4ef4459e03e772cd21b2c4f164" => :catalina
-    sha256 "aaac9c0de3b35432ea6266d567bc5192aecdaff59c89cb6dbc4d01a072a04571" => :mojave
-    sha256 "ae1478ae76966d09c308cccc91955fa8d117fc6bd5514366f8d0a75d2c8b4477" => :high_sierra
+    rebuild 2
+    sha256 "8a27f4ff10628a7366f0a63480433fa1138c547fbd49343258abb47cd4908e67" => :big_sur
+    sha256 "4b32c4d13a178a568d7a8668f0d42c40a02d161fac8ea7b10f5c2e468cbca4a6" => :catalina
+    sha256 "c52e7c5c5a92e4e5faf2ab5aa6cb66eeabc943869161bf5c8853b37dbd6a49a3" => :mojave
   end
 
   depends_on "cmake" => :build
@@ -15,11 +22,15 @@ class Mariadb < Formula
   depends_on "groonga"
   depends_on "openssl@1.1"
 
+  uses_from_macos "bison" => :build
+  uses_from_macos "bzip2"
+  uses_from_macos "ncurses"
+  uses_from_macos "zlib"
+
   conflicts_with "mysql", "percona-server",
-    :because => "mariadb, mysql, and percona install the same binaries"
-  conflicts_with "mytop", :because => "both install `mytop` binaries"
-  conflicts_with "mariadb-connector-c",
-    :because => "both install plugins"
+    because: "mariadb, mysql, and percona install the same binaries"
+  conflicts_with "mytop", because: "both install `mytop` binaries"
+  conflicts_with "mariadb-connector-c", because: "both install `mariadb_config`"
 
   def install
     # Set basedir and ldata so that mysql_install_db can find the server
@@ -103,6 +114,8 @@ class Mariadb < Formula
   end
 
   def post_install
+    return if ENV["CI"]
+
     # Make sure the var/mysql directory exists
     (var/"mysql").mkpath
     unless File.exist? "#{var}/mysql/mysql/user.frm"
@@ -112,45 +125,55 @@ class Mariadb < Formula
     end
   end
 
-  def caveats; <<~EOS
-    A "/etc/my.cnf" from another install may interfere with a Homebrew-built
-    server starting up correctly.
+  def caveats
+    <<~EOS
+      A "/etc/my.cnf" from another install may interfere with a Homebrew-built
+      server starting up correctly.
 
-    MySQL is configured to only allow connections from localhost by default
-
-    To connect:
-        mysql -uroot
-  EOS
+      MySQL is configured to only allow connections from localhost by default
+    EOS
   end
 
-  plist_options :manual => "mysql.server start"
+  plist_options manual: "mysql.server start"
 
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>KeepAlive</key>
-      <true/>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/mysqld_safe</string>
-        <string>--datadir=#{var}/mysql</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>WorkingDirectory</key>
-      <string>#{var}</string>
-    </dict>
-    </plist>
-  EOS
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>KeepAlive</key>
+        <true/>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/mysqld_safe</string>
+          <string>--datadir=#{var}/mysql</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>WorkingDirectory</key>
+        <string>#{var}</string>
+      </dict>
+      </plist>
+    EOS
   end
 
   test do
-    system bin/"mysqld", "--version"
-    prune_file = etc/"my.cnf.d/.homebrew_dont_prune_me"
-    assert_predicate prune_file, :exist?, "Failed to find #{prune_file}!"
+    (testpath/"mysql").mkpath
+    (testpath/"tmp").mkpath
+    system bin/"mysql_install_db", "--no-defaults", "--user=#{ENV["USER"]}",
+      "--basedir=#{prefix}", "--datadir=#{testpath}/mysql", "--tmpdir=#{testpath}/tmp",
+      "--auth-root-authentication-method=normal"
+    port = free_port
+    fork do
+      system "#{bin}/mysqld", "--no-defaults", "--user=#{ENV["USER"]}",
+        "--datadir=#{testpath}/mysql", "--port=#{port}", "--tmpdir=#{testpath}/tmp"
+    end
+    sleep 5
+    assert_match "information_schema",
+      shell_output("#{bin}/mysql --port=#{port} --user=root --password= --execute='show databases;'")
+    system "#{bin}/mysqladmin", "--port=#{port}", "--user=root", "--password=", "shutdown"
   end
 end

@@ -1,15 +1,18 @@
 class Kepubify < Formula
   desc "Convert ebooks from epub to kepub"
   homepage "https://pgaskin.net/kepubify/"
-  url "https://github.com/geek1011/kepubify/archive/v3.0.0.tar.gz"
-  sha256 "1207fa20b230f7cb178e8114eda90edea7728a8014f7c7a86c46a4b4bfb4d87d"
-  head "https://github.com/geek1011/kepubify.git"
+  url "https://github.com/pgaskin/kepubify/archive/v3.1.6.tar.gz"
+  sha256 "09b81eff1cf53fb184773cf289c1eee56c3354cf6e1efddb5e308566b31de69f"
+  license "MIT"
+  head "https://github.com/pgaskin/kepubify.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "64b605eabed48fddc8b91aa7926c5d6891cebfbec695e1de9db7ea68f35e8030" => :catalina
-    sha256 "47d64ec643746a75899b51f1e14bc1a3d78a6a5d409e26995117a81a26bd4425" => :mojave
-    sha256 "938a7cc8a66691e06f9ac28b8f5fcde7ff92149076e9d17c1e1e984322003eea" => :high_sierra
+    sha256 "ab32b2f204c1f4ece431637f102377f7eb75d9dd186699aabb6e915d0bab3846" => :big_sur
+    sha256 "b38ad070890e803edf906436df1c6080c741c0af97ceaed978c35b56706783f7" => :arm64_big_sur
+    sha256 "02f990a949cebef432e4355e90c5e4685d85f556519392ecb425a0d7e0730add" => :catalina
+    sha256 "6f5f0a9dff4919fbdd57fece754775014f2528fdd86e0f6a3ed5b30333d14435" => :mojave
+    sha256 "ea8a1abda1b013780b9475fdcd9ee1332fbb33d22e8e41a43bfd4ad7b99bbfd1" => :high_sierra
   end
 
   depends_on "go" => :build
@@ -17,16 +20,15 @@ class Kepubify < Formula
   def install
     ENV["GOPATH"] = HOMEBREW_CACHE/"go_cache"
 
-    ldflags = "-s -w -X main.version=#{version}"
-
-    system "go", "build", "-o", bin/"kepubify",
-                 "-ldflags", ldflags
-
-    system "go", "build", "-o", bin/"covergen",
-                 "-ldflags", ldflags, "./covergen"
-
-    system "go", "build", "-o", bin/"seriesmeta",
-                 "-ldflags", ldflags, "./seriesmeta"
+    %w[
+      kepubify
+      covergen
+      seriesmeta
+    ].each do |p|
+      system "go", "build", "-o", bin/p,
+                   "-ldflags", "-s -w -X main.version=#{version}",
+                   "./cmd/#{p}"
+    end
 
     pkgshare.install "kepub/test.epub"
   end

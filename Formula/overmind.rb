@@ -1,16 +1,18 @@
 class Overmind < Formula
   desc "Process manager for Procfile-based applications and tmux"
   homepage "https://github.com/DarthSim/overmind"
-  url "https://github.com/DarthSim/overmind/archive/v2.1.0.tar.gz"
-  sha256 "dfd5e562fe9d94cdcb3048be99280dab897ad57d54178b74dab023b49308a534"
+  url "https://github.com/DarthSim/overmind/archive/v2.2.0.tar.gz"
+  sha256 "6c24fd91167f0fd35c60275f1cea9998c1ffab88a6b699731bf88f4e54f23d48"
+  license "MIT"
   head "https://github.com/DarthSim/overmind.git"
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "df98635534afa5d8f50dae0d94c22c322eb9207504286e2de3d893f48dd231be" => :catalina
-    sha256 "71e26cd0de3036d27a040b163754b9d6e7d00756e15158ec24e9709b10b512c3" => :mojave
-    sha256 "749729e78f9702a2a2523a6f31c2a157a4266aeabc8e3a54b69cacad5edfc897" => :high_sierra
+    sha256 "756aeec8ddea0b78c4159ddfe851b1db8e5e9baa0c9726134fc0db73dd34e991" => :big_sur
+    sha256 "b2b0ee512f0512b1f8c720341d903f672356ec17c5548e7065c85aa87d80a249" => :arm64_big_sur
+    sha256 "dd22cafb2c5437c5e33ea1d7354b6477f743adb23393b9f0c8794cd2ae8ff213" => :catalina
+    sha256 "cdb7478361214b56df089ea7038c4747a2430defc6af864c66fe95796a3b5ce6" => :mojave
+    sha256 "5304546181f4a8da0604296b277000c16143862a11def6b48cab969e2a34ee62" => :high_sierra
   end
 
   depends_on "go" => :build

@@ -1,24 +1,37 @@
 class MariadbConnectorC < Formula
   desc "MariaDB database connector for C applications"
   homepage "https://downloads.mariadb.org/connector-c/"
-  url "https://downloads.mariadb.org/f/connector-c-3.1.6/mariadb-connector-c-3.1.6-src.tar.gz"
-  sha256 "d266bb67df83c088c4fb05392713d2504c67be620894cedaf758a9561c116720"
+  url "https://downloads.mariadb.org/f/connector-c-3.1.11/mariadb-connector-c-3.1.11-src.tar.gz"
+  mirror "https://fossies.org/linux/misc/mariadb-connector-c-3.1.11-src.tar.gz"
+  sha256 "3e6f6c399493fe90efdc21a3fe70c30434b7480e8195642a959f1dd7a0fa5b0f"
+  license "LGPL-2.1-or-later"
+  revision 1
+  head "https://github.com/mariadb-corporation/mariadb-connector-c.git"
+
+  livecheck do
+    url "https://downloads.mariadb.org/connector-c/+releases/"
+    regex(%r{href=.*?connector-c/v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
 
   bottle do
-    sha256 "4398d6a99238b3e29c4dc5ad2426febd0d2884b81df7042cc888fb233da4fbc6" => :catalina
-    sha256 "ea55803a15dc9806e3f521bfde2eeaa304a7350224463cbeb3394215f58eb6f3" => :mojave
-    sha256 "0d853c1cbac3f3a3b3ed00825f3c4cb3bf12a27130ac90ad3d802b1282f81b27" => :high_sierra
+    sha256 "336449db2c8c97536c63023289de0afe75324a7b85c1cd601e5248100cb8f34b" => :big_sur
+    sha256 "32910577f524f9100dccee7efdf1fff27e2e2804c757ace2d84ac304f12c64d3" => :arm64_big_sur
+    sha256 "2efbfa48262a5d9f5232d68ac6ae2d0e82fe55fed4cf2278cd2ec858a34d7e1a" => :catalina
+    sha256 "31b05ada881147da4af8f2ac0b5402fcaa8e995876451e3af5d448f2df2cd609" => :mojave
   end
 
   depends_on "cmake" => :build
   depends_on "openssl@1.1"
 
-  conflicts_with "mariadb",
-                 :because => "both install mariadb_config"
+  uses_from_macos "curl"
+  uses_from_macos "zlib"
+
+  conflicts_with "mariadb", because: "both install `mariadb_config`"
 
   def install
     args = std_cmake_args
     args << "-DWITH_OPENSSL=On"
+    args << "-DWITH_EXTERNAL_ZLIB=On"
     args << "-DOPENSSL_INCLUDE_DIR=#{Formula["openssl@1.1"].opt_include}"
     args << "-DCOMPILATION_COMMENT=Homebrew"
 

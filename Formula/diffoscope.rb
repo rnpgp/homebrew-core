@@ -1,20 +1,34 @@
 class Diffoscope < Formula
+  include Language::Python::Virtualenv
+
   desc "In-depth comparison of files, archives, and directories"
   homepage "https://diffoscope.org"
-  url "https://files.pythonhosted.org/packages/89/3f/e99b3a34f7b57b9680582936db229bba361e12b088a20cf82ebd3fafcd8c/diffoscope-128.tar.gz"
-  sha256 "b3baeb222b8ea81765c4b1e3db084da923e0f08f1a4d1207014abb4f0cd29568"
+  url "https://files.pythonhosted.org/packages/91/1a/f15768b9af208111eec34135f26e0993e0e3b33164b2742d684dc29fcc1c/diffoscope-164.tar.gz"
+  sha256 "bc269a39ec72261d9fead55bd951f6cbbe3d2ccce1481f974665999a5b141fff"
+  license "GPL-3.0-or-later"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "a3adf0916ecc3946fa7edf974b05d8b2dcd39caab86056ef3572e1f0e4122b71" => :catalina
-    sha256 "a3adf0916ecc3946fa7edf974b05d8b2dcd39caab86056ef3572e1f0e4122b71" => :mojave
-    sha256 "a3adf0916ecc3946fa7edf974b05d8b2dcd39caab86056ef3572e1f0e4122b71" => :high_sierra
+    sha256 "d6e3f6814e03ae94ece8aee3cea561fe352ffaba54e26d0f83e863b4102b9c2e" => :big_sur
+    sha256 "7f4516261a620f685012a5284b179d14a934ad0130f3379e3312ee80f5674be3" => :arm64_big_sur
+    sha256 "de7f317c11377d4ca92aee688c08eeee974fda4fe9680e30f818068fbe125bea" => :catalina
+    sha256 "0dc9c9e70d89f649e68966ac146ce8e03ddc01021af8b62323c8f4f77dd093f8" => :mojave
   end
 
   depends_on "gnu-tar"
   depends_on "libarchive"
   depends_on "libmagic"
-  depends_on "python"
+  depends_on "python@3.9"
+
+  # Use resources from diffoscope[cmdline]
+  resource "argcomplete" do
+    url "https://files.pythonhosted.org/packages/cb/53/d2e3d11726367351b00c8f078a96dacb7f57aef2aca0d3b6c437afc56b55/argcomplete-1.12.2.tar.gz"
+    sha256 "de0e1282330940d52ea92a80fea2e4b9e0da1932aaa570f84d268939d1897b04"
+  end
 
   resource "libarchive-c" do
     url "https://files.pythonhosted.org/packages/63/fe/9e6c78db381934e28c7ec3d30d4f209fe24442d17f1bd8c56d13ae185cf6/libarchive-c-2.9.tar.gz"
@@ -27,28 +41,18 @@ class Diffoscope < Formula
   end
 
   resource "python-magic" do
-    url "https://files.pythonhosted.org/packages/84/30/80932401906eaf787f2e9bd86dc458f1d2e75b064b4c187341f29516945c/python-magic-0.4.15.tar.gz"
-    sha256 "f3765c0f582d2dfc72c15f3b5a82aecfae9498bd29ca840d72f37d7bd38bfcd5"
+    url "https://files.pythonhosted.org/packages/e3/85/1aff76b966622868a73717abd8b501a3c91890e23a65e5f574ff6df1970f/python-magic-0.4.18.tar.gz"
+    sha256 "b757db2a5289ea3f1ced9e60f072965243ea43a2221430048fd8cacab17be0ce"
   end
 
   def install
-    ENV.delete("PYTHONPATH") # play nice with libmagic --with-python
+    venv = virtualenv_create(libexec, Formula["python@3.9"].opt_bin/"python3")
+    venv.pip_install resources
+    venv.pip_install buildpath
 
-    pyver = Language::Python.major_minor_version "python3"
-    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python#{pyver}/site-packages"
-
-    resources.each do |r|
-      r.stage do
-        system "python3", *Language::Python.setup_install_args(libexec/"vendor")
-      end
-    end
-
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{pyver}/site-packages"
-    system "python3", *Language::Python.setup_install_args(libexec)
-    bin.install Dir[libexec/"bin/*"]
-    libarchive = Formula["libarchive"].opt_lib/"libarchive.dylib"
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"],
-                                            :LIBARCHIVE => libarchive)
+    bin.install libexec/"bin/diffoscope"
+    libarchive = Formula["libarchive"].opt_lib/shared_library("libarchive")
+    bin.env_script_all_files(libexec/"bin", LIBARCHIVE: libarchive)
   end
 
   test do

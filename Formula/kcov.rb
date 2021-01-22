@@ -1,21 +1,31 @@
 class Kcov < Formula
   desc "Code coverage tester for compiled programs, Python, and shell scripts"
   homepage "https://simonkagstrom.github.io/kcov/"
-  url "https://github.com/SimonKagstrom/kcov/archive/v37.tar.gz"
-  sha256 "a136e3dddf850a8b006509f49cc75383cd44662169e9fec996ec8cc616824dcc"
+  url "https://github.com/SimonKagstrom/kcov/archive/38.tar.gz"
+  sha256 "b37af60d81a9b1e3b140f9473bdcb7975af12040feb24cc666f9bb2bb0be68b4"
+  license "GPL-2.0"
   revision 1
   head "https://github.com/SimonKagstrom/kcov.git"
 
+  # We check the Git tags because, as of writing, the "latest" release on GitHub
+  # is a prerelease version (`pre-v40`), so we can't rely on it being correct.
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)*)$/i)
+  end
+
   bottle do
     cellar :any_skip_relocation
-    sha256 "f5a315633b03a413537445adaa8d7792d8e371c61e14898624846c68710d6fd6" => :catalina
-    sha256 "a229154a02e28f524e8c0e2d7af39dfa1a9f4b9f37717634f8179edb7bd327ff" => :mojave
-    sha256 "53f0444710122b2bb9e15fabad7688a0c4fe1a7e336a23777c2dc124f4c3c81c" => :high_sierra
+    rebuild 1
+    sha256 "e8181653c02129bd63fd438d3e5965cd25d5408ebe7c6699da2ab86b9a9f4340" => :big_sur
+    sha256 "32aab6003ab8ca0cf45e55415ae5b78e6fc59f5e02fa1d84397df1be17261230" => :arm64_big_sur
+    sha256 "becb863fd482145cd67dab0b25df128b5deba598fa89a217cd6ff63ba79edbc5" => :catalina
+    sha256 "dd72670ef6f9abd9b44bf70b8fcb64faffe1ba4edfd4704c70de395d3594dc89" => :mojave
   end
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "python@3.8" => :build
+  depends_on "python@3.9" => :build
 
   def install
     mkdir "build" do

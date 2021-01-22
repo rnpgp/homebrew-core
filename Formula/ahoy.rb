@@ -1,11 +1,13 @@
 class Ahoy < Formula
   desc "Creates self documenting CLI programs from commands in YAML files"
-  homepage "http://www.ahoycli.com/"
+  homepage "https://ahoy-cli.readthedocs.io/"
   url "https://github.com/ahoy-cli/ahoy/archive/2.0.0.tar.gz"
   sha256 "cc3e426083bf7b7309e484fa69ed53b33c9b00adf9be879cbe74c19bdaef027c"
+  license "MIT"
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "4d796f66f413571680fa23532f3f1384670daa4cff4d91e5b05ff3b0ca478462" => :big_sur
     sha256 "fb8e03826f9109edc8bb5b1e0c7c9d8054d76e364bca13e0afdf7a23b022a817" => :catalina
     sha256 "eabaf2c0faa64d878f3fd552823b9d5103e0755ba5f3120628e605964fc93257" => :mojave
     sha256 "93db889b646270f7a92d32f649c9e256e4e90cfa006a04c614334f28557ce7ca" => :high_sierra
@@ -23,18 +25,19 @@ class Ahoy < Formula
     end
   end
 
-  def caveats; <<~EOS
-    ===== UPGRADING FROM 1.x TO 2.x =====
+  def caveats
+    <<~EOS
+      ===== UPGRADING FROM 1.x TO 2.x =====
 
-    If you are upgrading from ahoy 1.x, note that you'll
-    need to upgrade your ahoyapi settings in your .ahoy.yml
-    files to 'v2' instead of 'v1'.
+      If you are upgrading from ahoy 1.x, note that you'll
+      need to upgrade your ahoyapi settings in your .ahoy.yml
+      files to 'v2' instead of 'v1'.
 
-    See other changes at:
+      See other changes at:
 
-    https://github.com/ahoy-cli/ahoy
+      https://github.com/ahoy-cli/ahoy
 
-  EOS
+    EOS
   end
 
   test do

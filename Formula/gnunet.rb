@@ -1,14 +1,22 @@
 class Gnunet < Formula
   desc "Framework for distributed, secure and privacy-preserving applications"
   homepage "https://gnunet.org/"
-  url "https://ftp.gnu.org/gnu/gnunet/gnunet-0.12.1.tar.gz"
-  sha256 "5553014dfa8b9aefa96fe83c6a8b8a84a28b30655df0ce283fd3e44a5a1b1f7e"
+  url "https://ftp.gnu.org/gnu/gnunet/gnunet-0.13.3.tar.gz"
+  mirror "https://ftpmirror.gnu.org/gnunet/gnunet-0.13.3.tar.gz"
+  sha256 "318e06c4134d1a8ce3b4385d82b11316eaaeb9a4dbc5d4b646453dfc53199296"
+  license "AGPL-3.0-or-later"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    sha256 "094916ba2a9bab9c449b1c8047109b0f855ab26a6abd3937b60d15ed9297a8a6" => :catalina
-    sha256 "64bd9251aa9af2bd099907c6dde15b594ab99061791e97c1b30c20649d79cf33" => :mojave
-    sha256 "3e4a08fabc3b684375834eb592b1e11468ae82f27a71734b21f6134e1173bc72" => :high_sierra
+    sha256 "cea8501f8fa52cbb4b1d1af8628d4c0f09f3f3ae667a45f0445ab79e47c5b255" => :big_sur
+    sha256 "413b9db61db66ea96a9f1cbbb3471c35313ff195c1c1ee10d526e37e59f92fbf" => :arm64_big_sur
+    sha256 "1e2b31e022792cc40dcd11061644808f761e378a2178b1bfdd9191a31363ad1e" => :catalina
+    sha256 "ef84c90eb8ea9783adbaaa8b7034cb0662d7b697d2e5b7953365bac1681d5277" => :mojave
+    sha256 "5470d0894a0ca01ca53d3376e4bbc7ad038621827e7ff1e075e1dd2c07c579f3" => :high_sierra
   end
 
   depends_on "pkg-config" => :build
@@ -20,6 +28,7 @@ class Gnunet < Formula
   depends_on "libidn2"
   depends_on "libmicrohttpd"
   depends_on "libmpc"
+  depends_on "libsodium"
   depends_on "libunistring"
   depends_on "unbound"
 

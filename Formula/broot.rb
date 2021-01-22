@@ -1,37 +1,38 @@
 class Broot < Formula
   desc "New way to see and navigate directory trees"
-  homepage "https://dystroy.org/broot"
-  url "https://github.com/Canop/broot/archive/v0.12.0.tar.gz"
-  sha256 "eaf84409014e2e691c33d42676d0eeff8c961427914c18d5e1cff6e246a2f544"
+  homepage "https://dystroy.org/broot/"
+  url "https://github.com/Canop/broot/archive/v1.2.0.tar.gz"
+  sha256 "87758fd6bc4bc3db32d6a557b84db28fa527be2102ecf9c465cb5a0393af428f"
+  license "MIT"
   head "https://github.com/Canop/broot.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "94f495b23dc7dbf0012ee33efdfc40f3742ed6b74c9c6ab49452e21889cb753d" => :catalina
-    sha256 "3d6929d1fa011ad6d0ea039941f7e43a3e5524a1d871f4c31e660c9a9e32d2bb" => :mojave
-    sha256 "4ac5eacae4f75c830492431a8468d8f73312b8335092ac7b846f315c08d958b0" => :high_sierra
+    sha256 "eedcd8adb56807b193f8925efca20d9933a62d95c625c7c3894cc3e9d3b901c9" => :big_sur
+    sha256 "93114288238bfe25c8f3329a551370db61bfe69657c973c17f7055472a5356c0" => :arm64_big_sur
+    sha256 "573ab7b3cf5573926bdfe98a23f441fba62631bb300ab86b1fbd04404b59bd6a" => :catalina
+    sha256 "29aa8bfa211a22de8348c3dc440491633c223b4ab7c0323c31d8a0134eb4fe6b" => :mojave
   end
 
   depends_on "rust" => :build
 
+  uses_from_macos "zlib"
+
   def install
-    system "cargo", "install", "--locked", "--root", prefix, "--path", "."
+    system "cargo", "install", *std_cargo_args
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/broot --version")
+    assert_match "A tree explorer and a customizable launcher", shell_output("#{bin}/broot --help 2>&1")
 
-    assert_match "BFS", shell_output("#{bin}/broot --help 2>&1")
-
-    (testpath/"test.exp").write <<~EOS
-      spawn #{bin}/broot --cmd :pt --no-style --out #{testpath}/output.txt
-      send "n\r"
-      expect {
-        timeout { exit 1 }
-        eof
-      }
-    EOS
-
-    assert_match "New Configuration file written in", shell_output("expect -f test.exp 2>&1")
+    require "pty"
+    require "io/console"
+    PTY.spawn(bin/"broot", "--cmd", ":pt", "--no-style", "--out", testpath/"output.txt", err: :out) do |r, w, pid|
+      r.winsize = [20, 80] # broot dependency termimad requires width > 2
+      w.write "n\r"
+      assert_match "New Configuration file written in", r.read
+      Process.wait(pid)
+    end
+    assert_equal 0, $CHILD_STATUS.exitstatus
   end
 end

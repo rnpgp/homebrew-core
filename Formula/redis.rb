@@ -1,22 +1,28 @@
 class Redis < Formula
   desc "Persistent key-value database, with built-in net interface"
   homepage "https://redis.io/"
-  url "http://download.redis.io/releases/redis-5.0.7.tar.gz"
-  sha256 "61db74eabf6801f057fd24b590232f2f337d422280fd19486eca03be87d3a82b"
-  head "https://github.com/antirez/redis.git", :branch => "unstable"
+  url "https://download.redis.io/releases/redis-6.0.10.tar.gz"
+  sha256 "79bbb894f9dceb33ca699ee3ca4a4e1228be7fb5547aeb2f99d921e86c1285bd"
+  license "BSD-3-Clause"
+  head "https://github.com/redis/redis.git", branch: "unstable"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "7a50c626ad90c40fd315f7f053460f0c6701cc2b776a1b3e83dc44698936cd0f" => :catalina
-    sha256 "e8956553dbc1f519bcd0330bd2d41eb884997303b84dd43be686a9d974e2d003" => :mojave
-    sha256 "789cf8094a5909d295ce3b9996b8470d565e6c9dedbc952176af670a660a8c6f" => :high_sierra
+  livecheck do
+    url "https://download.redis.io/releases/"
+    regex(/href=.*?redis[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  def install
-    # Architecture isn't detected correctly on 32bit Snow Leopard without help
-    ENV["OBJARCH"] = "-arch #{MacOS.preferred_arch}"
+  bottle do
+    cellar :any
+    sha256 "ecd20074b450f501345d7533abc51e8f47f28f27a5c8b7c698fe4d80aeb8126c" => :big_sur
+    sha256 "0ae80e0e8a0a13d663a1d9e1c74bb17df56deb4b2edd5397b363ec4f6a32e43c" => :arm64_big_sur
+    sha256 "92bc496f208cdbcbf5b9251d0e32bca775d19e800b5d19948c54c3f8d03f0c9b" => :catalina
+    sha256 "2c577a2692701929cc90f0bd2fd050e47705d8693086e1050b4b69ec95315ed1" => :mojave
+  end
 
-    system "make", "install", "PREFIX=#{prefix}", "CC=#{ENV.cc}"
+  depends_on "openssl@1.1"
+
+  def install
+    system "make", "install", "PREFIX=#{prefix}", "CC=#{ENV.cc}", "BUILD_TLS=yes"
 
     %w[run db/redis log].each { |p| (var/p).mkpath }
 
@@ -31,37 +37,38 @@ class Redis < Formula
     etc.install "sentinel.conf" => "redis-sentinel.conf"
   end
 
-  plist_options :manual => "redis-server #{HOMEBREW_PREFIX}/etc/redis.conf"
+  plist_options manual: "redis-server #{HOMEBREW_PREFIX}/etc/redis.conf"
 
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>KeepAlive</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
         <dict>
-          <key>SuccessfulExit</key>
-          <false/>
+          <key>KeepAlive</key>
+          <dict>
+            <key>SuccessfulExit</key>
+            <false/>
+          </dict>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/redis-server</string>
+            <string>#{etc}/redis.conf</string>
+            <string>--daemonize no</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>WorkingDirectory</key>
+          <string>#{var}</string>
+          <key>StandardErrorPath</key>
+          <string>#{var}/log/redis.log</string>
+          <key>StandardOutPath</key>
+          <string>#{var}/log/redis.log</string>
         </dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/redis-server</string>
-          <string>#{etc}/redis.conf</string>
-          <string>--daemonize no</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>WorkingDirectory</key>
-        <string>#{var}</string>
-        <key>StandardErrorPath</key>
-        <string>#{var}/log/redis.log</string>
-        <key>StandardOutPath</key>
-        <string>#{var}/log/redis.log</string>
-      </dict>
-    </plist>
-  EOS
+      </plist>
+    EOS
   end
 
   test do

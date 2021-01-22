@@ -2,31 +2,28 @@ class Calicoctl < Formula
   desc "Calico CLI tool"
   homepage "https://www.projectcalico.org"
   url "https://github.com/projectcalico/calicoctl.git",
-      :tag      => "v3.11.2",
-      :revision => "05f36cc89d21a75d1618af03df224ebcf5078bd2"
+      tag:      "v3.17.1",
+      revision: "8871aca3dc0b30d6143031e46498b648e153da2a"
+  license "Apache-2.0"
+  head "https://github.com/projectcalico/calicoctl.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3918f46d2ce63e01bb65fceb117e9a8e5355d26ccb32615b2541369180c3ea1d" => :catalina
-    sha256 "e3360b62ab670e18cfc33fa10aa1f0db0055bd557577be89f688a547466da483" => :mojave
-    sha256 "e28659a026a14ab0d31f0a3ea9a28f58b0cb574f798b7f363b752b7475973573" => :high_sierra
+    sha256 "6ab5678c0037e96ba8efca1d2fad58a4051e6d9bb1b8cd48f7b149f8c12380b4" => :big_sur
+    sha256 "46dcad8fbdb7468ff86e47af5382dcb33a0c581d8e2521b13568f7d28cfd6376" => :arm64_big_sur
+    sha256 "bcc50b0b86619b2ac9a459d86f726e3595e9afd37e175d2d63edee8b402a2139" => :catalina
+    sha256 "b01d4c3fd2b8a6cf486dc98fbd9a7cca41ee2843a1f07ffdbfc1a24d73e0a6f8" => :mojave
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-
-    dir = buildpath/"src/github.com/projectcalico/calicoctl"
-    dir.install buildpath.children
-
-    cd dir do
-      commands = "github.com/projectcalico/calicoctl/calicoctl/commands"
-      ldflags = "-X #{commands}.VERSION=#{stable.specs[:tag]} -X #{commands}.GIT_REVISION=#{stable.specs[:revision][0, 8]} -s -w"
-      system "go", "build", "-v", "-o", "dist/calicoctl-darwin-amd64", "-ldflags", ldflags, "calicoctl/calicoctl.go"
-      bin.install "dist/calicoctl-darwin-amd64" => "calicoctl"
-      prefix.install_metafiles
-    end
+    commands = "github.com/projectcalico/calicoctl/calicoctl/commands"
+    system "go", "build", *std_go_args,
+                          "-ldflags", "-X #{commands}.VERSION=#{version} " \
+                                      "-X #{commands}.GIT_REVISION=#{Utils.git_short_head} " \
+                                      "-s -w",
+                          "calicoctl/calicoctl.go"
   end
 
   test do

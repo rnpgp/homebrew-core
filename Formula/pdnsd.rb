@@ -4,9 +4,12 @@ class Pdnsd < Formula
   url "http://members.home.nl/p.a.rombouts/pdnsd/releases/pdnsd-1.2.9a-par.tar.gz"
   version "1.2.9a-par"
   sha256 "bb5835d0caa8c4b31679d6fd6a1a090b71bdf70950db3b1d0cea9cf9cb7e2a7b"
+  license "GPL-3.0"
 
   bottle do
     rebuild 2
+    sha256 "1ab46d6a13884a67fe91ecb554c53c8fc5fda4f2d453016cdd1242f8c362e9d5" => :big_sur
+    sha256 "2a39399ddd344c3d38b4052ca914dc99eebd452a9cf323518504c19671e7b2f6" => :arm64_big_sur
     sha256 "125b690bbac734558cd9a4510c1336e2a92c3fd4748ba2ed216af9a5041c5d60" => :catalina
     sha256 "822ab7ede7c626ab8cb0c5e7340f3896cdef7cc112c8d9843e55d601f5847297" => :mojave
     sha256 "be218973e8fe1d807e7d9ec2762cab2a9968ce302fb46fb89974a686c1afcc43" => :high_sierra
@@ -25,48 +28,50 @@ class Pdnsd < Formula
     system "make", "install"
   end
 
-  def caveats; <<~EOS
-    This install of "pdnsd" expects config files to be in #{etc}
-    All state files (status and cache) are stored in #{var}/cache/pdnsd.
+  def caveats
+    <<~EOS
+      This install of "pdnsd" expects config files to be in #{etc}
+      All state files (status and cache) are stored in #{var}/cache/pdnsd.
 
-    pdnsd needs to run as root since it listens on privileged ports.
+      pdnsd needs to run as root since it listens on privileged ports.
 
-    Sample config file can be found at #{etc}/pdnsd.conf.sample.
+      Sample config file can be found at #{etc}/pdnsd.conf.sample.
 
-    Note that you must create the config file before starting the service,
-    and change ownership to "root" or pdnsd will refuse to run:
-      sudo chown root #{etc}/pdnsd.conf
+      Note that you must create the config file before starting the service,
+      and change ownership to "root" or pdnsd will refuse to run:
+        sudo chown root #{etc}/pdnsd.conf
 
-    For other related utilities, e.g. pdnsd-ctl, to run, change the ownership
-    to the user (default: nobody) running the service:
-      sudo chown -R nobody #{var}/log/pdnsd.log #{var}/cache/pdnsd
-  EOS
+      For other related utilities, e.g. pdnsd-ctl, to run, change the ownership
+      to the user (default: nobody) running the service:
+        sudo chown -R nobody #{var}/log/pdnsd.log #{var}/cache/pdnsd
+    EOS
   end
 
-  plist_options :startup => true, :manual => "sudo pdnsd"
+  plist_options startup: true, manual: "sudo pdnsd"
 
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>KeepAlive</key>
-      <true/>
-      <key>Program</key>
-      <string>#{opt_sbin}/pdnsd</string>
-      <key>StandardErrorPath</key>
-      <string>#{var}/log/pdnsd.log</string>
-      <key>StandardOutputPath</key>
-      <string>#{var}/log/pdnsd.log</string>
-      <key>Disabled</key>
-      <false/>
-    </dict>
-    </plist>
-  EOS
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+        <key>Program</key>
+        <string>#{opt_sbin}/pdnsd</string>
+        <key>StandardErrorPath</key>
+        <string>#{var}/log/pdnsd.log</string>
+        <key>StandardOutputPath</key>
+        <string>#{var}/log/pdnsd.log</string>
+        <key>Disabled</key>
+        <false/>
+      </dict>
+      </plist>
+    EOS
   end
 
   test do

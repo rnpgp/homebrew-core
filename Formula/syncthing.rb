@@ -1,70 +1,72 @@
 class Syncthing < Formula
   desc "Open source continuous file synchronization application"
   homepage "https://syncthing.net/"
-  url "https://github.com/syncthing/syncthing.git",
-      :tag      => "v1.3.3",
-      :revision => "325c3c1fa7b8d4b59e3c16057756b679723971d6"
-  head "https://github.com/syncthing/syncthing.git"
+  url "https://github.com/syncthing/syncthing/archive/v1.12.1.tar.gz"
+  sha256 "5751365374e03c32f731aeb1d07f7df0984eca30e14878d636b91cd35f0db1c3"
+  license "MPL-2.0"
+  head "https://github.com/syncthing/syncthing.git", branch: "main"
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    rebuild 1
-    sha256 "8c2178b056f519a28bf6403eab2e577c9d95280e45770461ff8106a3feba88fc" => :catalina
-    sha256 "16226e488cb79ffbc587a8a29d97581046a8adc32e13f75470b9e8be1768e971" => :mojave
-    sha256 "7802acaab4176067b21c81a91364965e0e75e34c470b7ec09d2cc5dc6a9309fb" => :high_sierra
+    sha256 "78be6ce00fa75ba6200d79edcaa8a348c72dea403f9e09f6ba3b3a8418fa7d1c" => :big_sur
+    sha256 "c927c7724cc45631a36dd771c08b05a6ffddbfe363e8278d0280c9ae418fe994" => :catalina
+    sha256 "68942c0186ceb0223bf95d9ce5ac472305550e6ec3fe3f5a45d248171f210e27" => :mojave
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
+    build_version = build.head? ? "v0.0.0-#{version}" : "v#{version}"
+    system "go", "run", "build.go", "--version", build_version, "--no-upgrade", "tar"
+    bin.install "syncthing"
 
-    src = buildpath/"src/github.com/syncthing/syncthing"
-    src.install buildpath.children
-    src.cd do
-      system "./build.sh", "noupgrade"
-      bin.install "syncthing"
-      man1.install Dir["man/*.1"]
-      man5.install Dir["man/*.5"]
-      man7.install Dir["man/*.7"]
-      prefix.install_metafiles
-    end
+    man1.install Dir["man/*.1"]
+    man5.install Dir["man/*.5"]
+    man7.install Dir["man/*.7"]
   end
 
-  plist_options :manual => "syncthing"
+  plist_options manual: "syncthing"
 
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/syncthing</string>
-          <string>-no-browser</string>
-          <string>-no-restart</string>
-        </array>
-        <key>KeepAlive</key>
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
         <dict>
-          <key>Crashed</key>
-          <true/>
-          <key>SuccessfulExit</key>
-          <false/>
+          <key>Label</key>
+          <string>#{plist_name}</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{opt_bin}/syncthing</string>
+            <string>-no-browser</string>
+            <string>-no-restart</string>
+          </array>
+          <key>KeepAlive</key>
+          <dict>
+            <key>Crashed</key>
+            <true/>
+            <key>SuccessfulExit</key>
+            <false/>
+          </dict>
+          <key>ProcessType</key>
+          <string>Background</string>
+          <key>StandardErrorPath</key>
+          <string>#{var}/log/syncthing.log</string>
+          <key>StandardOutPath</key>
+          <string>#{var}/log/syncthing.log</string>
         </dict>
-        <key>ProcessType</key>
-        <string>Background</string>
-        <key>StandardErrorPath</key>
-        <string>#{var}/log/syncthing.log</string>
-        <key>StandardOutPath</key>
-        <string>#{var}/log/syncthing.log</string>
-      </dict>
-    </plist>
-  EOS
+      </plist>
+    EOS
   end
 
   test do
+    build_version = build.head? ? "v0.0.0-#{version}" : "v#{version}"
+    assert_match "syncthing #{build_version} ", shell_output("#{bin}/syncthing --version")
     system bin/"syncthing", "-generate", "./"
   end
 end

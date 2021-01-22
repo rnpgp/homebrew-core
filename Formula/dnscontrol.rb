@@ -1,28 +1,30 @@
 class Dnscontrol < Formula
   desc "It is system for maintaining DNS zones"
   homepage "https://github.com/StackExchange/dnscontrol"
-  url "https://github.com/StackExchange/dnscontrol/archive/v2.10.0.tar.gz"
-  sha256 "09d71634172f498c5d2b73d6f6c71439f4d88a874cfb3adc4cbbeb81ddef70a6"
+  url "https://github.com/StackExchange/dnscontrol/archive/v3.5.0.tar.gz"
+  sha256 "d90d5a54e5ea4c2e6bd296f950b3f9059dd1a5801e306b475421d6344489d917"
+  license "MIT"
+  version_scheme 1
+
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "8da55ec16df14e808ed85d46f0cff9fda955fcdd0a42976f4311bdc943977ef1" => :catalina
-    sha256 "673f2c71423139578588b9efc27758aaafb34734f751921f33edf023e8f0e5cf" => :mojave
-    sha256 "5e8070b5d8be878b90657bee6d090b9ceb93b5a8bb14b68490c4a408308db964" => :high_sierra
+    rebuild 1
+    sha256 "1edf810e9987ae2a366f0c0b230d1cecf64f79eaf8786f45f0e407e1d9df2afa" => :big_sur
+    sha256 "959c5a1c54cb8c3b5094111b54344102db0d9f2223132c39a7822726b2e379a0" => :arm64_big_sur
+    sha256 "7fd47fbb51172c89e6fb30a4ae7b6f43c6e7ec779af1270cc706f83b165e6306" => :catalina
+    sha256 "f5c9c7d74265b48531453d8f01ddb60905bfc5046711dbbd64416ab137b588d8" => :mojave
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
-
-    srcpath = buildpath/"src/github.com/StackExchange/dnscontrol"
-    srcpath.install buildpath.children
-
-    cd srcpath do
-      system "go", "build", "-o", bin/"dnscontrol"
-      prefix.install_metafiles
-    end
+    system "go", "build", *std_go_args
+    prefix.install_metafiles
   end
 
   test do

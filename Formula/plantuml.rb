@@ -1,14 +1,20 @@
 class Plantuml < Formula
   desc "Draw UML diagrams"
   homepage "https://plantuml.com/"
-  url "https://downloads.sourceforge.net/project/plantuml/1.2020.0/plantuml.1.2020.0.jar"
-  sha256 "7a9d2d56aeed9381066f98e3cf6450a06258ccfd4bfa7f306a62451e8af470c5"
+  url "https://downloads.sourceforge.net/project/plantuml/1.2021.0/plantuml.1.2021.0.jar"
+  sha256 "40446bb1307c18ef81f0366497546eaeef41c3eb8bf688d06c9df6d6c6ea230b"
+  license "GPL-3.0-or-later"
   version_scheme 1
+
+  livecheck do
+    url :stable
+    regex(%r{url=.*?/plantuml[._-]v?(\d+(?:\.\d+)+)\.t}i)
+  end
 
   bottle :unneeded
 
   depends_on "graphviz"
-  depends_on :java
+  depends_on "openjdk"
 
   def install
     jar = "plantuml.jar"
@@ -18,9 +24,9 @@ class Plantuml < Formula
       if [[ "$*" != *"-gui"* ]]; then
         VMARGS="-Djava.awt.headless=true"
       fi
-      GRAPHVIZ_DOT="#{Formula["graphviz"].opt_bin}/dot" exec java $VMARGS -jar #{libexec}/#{jar} "$@"
+      GRAPHVIZ_DOT="#{Formula["graphviz"].opt_bin}/dot" exec "#{Formula["openjdk"].opt_bin}/java" $VMARGS -jar #{libexec}/#{jar} "$@"
     EOS
-    chmod 0555, bin/"plantuml"
+    chmod 0755, bin/"plantuml"
   end
 
   test do

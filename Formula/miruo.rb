@@ -4,9 +4,12 @@ class Miruo < Formula
   url "https://github.com/KLab/miruo/archive/0.9.6b.tar.gz"
   version "0.9.6b"
   sha256 "0b31a5bde5b0e92a245611a8e671cec3d330686316691daeb1de76360d2fa5f1"
+  license "GPL-3.0"
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "61fbf984ade171a70ae80af4695a78ed35331a143cdc12ddf4440fee74889807" => :big_sur
+    sha256 "cd45391af46ccd1a166e139e2aa6020e0e75999a094e5e4a4eabb8ca5056fc97" => :arm64_big_sur
     sha256 "044456429802d6f6d8ba2a8d00547e0e0695e99edd1cceb1af29e70eb004d13f" => :catalina
     sha256 "a71716a29094f72b62cc6a84284abb509916907c5559b25a2b85196148b86c84" => :mojave
     sha256 "36df62e0454d4b7e5743a002a2ff3293e087a9fb607c369f3d23732d87330e4e" => :high_sierra
@@ -17,12 +20,15 @@ class Miruo < Formula
   end
 
   def install
-    system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking", "--with-libpcap=#{MacOS.sdk_path}/usr"
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-dependency-tracking",
+                          "--with-libpcap=#{MacOS.sdk_path}/usr"
     system "make", "install"
   end
 
   test do
-    (testpath/"dummy.pcap").write("\xd4\xc3\xb2\xa1\x02\x00\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\x00\x00\x01\x00\x00\x00")
+    (testpath/"dummy.pcap").write "\xd4\xc3\xb2\xa1\x02\x00\x04\x00\x00\x00\x00\x00" \
+                                  "\x00\x00\x00\x00\xff\xff\x00\x00\x01\x00\x00\x00"
     system "#{sbin}/miruo", "--file=dummy.pcap"
   end
 end

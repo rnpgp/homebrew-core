@@ -3,16 +3,23 @@ class Mcrypt < Formula
   homepage "https://mcrypt.sourceforge.io"
   url "https://downloads.sourceforge.net/project/mcrypt/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz"
   sha256 "5145aa844e54cca89ddab6fb7dd9e5952811d8d787c4f4bf27eb261e6c182098"
+  license "GPL-3.0"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any
-    rebuild 2
-    sha256 "c9d3313218375e8bca6e22b00fcb47f11550c386ae64422bb59869af161cf6eb" => :catalina
-    sha256 "b79e4ba583c523e382d1cc08430c96252c8e048cc1661ab3a9bed90468c8b06c" => :mojave
-    sha256 "e11c2a7a1caf26c2a1d3d171d3291888e065ba0328f6934882cffcaec72475cd" => :high_sierra
+    rebuild 3
+    sha256 "284a74fc68549f1479e592b8daf2fd02f695292c5ca0334e7181906803396ceb" => :big_sur
+    sha256 "488ff0ff6090f2d58c4bee440fe473f53f3755017bea445e84c94455c235a5b9" => :catalina
+    sha256 "55b9b6cb471b312208afddc9bbc9caaf8be6043d2b1cc7e32161633f83e226e5" => :mojave
   end
 
   depends_on "mhash"
+
+  uses_from_macos "zlib"
 
   resource "libmcrypt" do
     url "https://downloads.sourceforge.net/project/mcrypt/Libmcrypt/2.5.8/libmcrypt-2.5.8.tar.gz"
@@ -24,6 +31,9 @@ class Mcrypt < Formula
   patch :DATA
 
   def install
+    # Work around configure issues with Xcode 12
+    ENV.append "CFLAGS", "-Wno-implicit-function-declaration"
+
     resource("libmcrypt").stage do
       system "./configure", "--prefix=#{prefix}",
                             "--mandir=#{man}"

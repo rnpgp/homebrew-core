@@ -1,20 +1,26 @@
 class Comby < Formula
   desc "Tool for changing code across many languages"
   homepage "https://comby.dev"
-  url "https://github.com/comby-tools/comby/archive/0.12.0.tar.gz"
-  sha256 "ec0808c59bb7733dd5ba515147895db5f5820a5333fcd479f3091ea0b6a5519e"
+  url "https://github.com/comby-tools/comby/archive/1.0.0.tar.gz"
+  sha256 "755075e71059b908779ce7078bd9514128107e9c6e90cb150c4346621a88cde2"
+  license "Apache-2.0"
 
   bottle do
     cellar :any
-    sha256 "9af7377e3a37fbbc19896b40a61dc5718396a080d752c3a9557b0b3e3faf96d7" => :catalina
-    sha256 "d1d4351daf973c806da71fa970986837a6bf2ed0897f6178ad6909a2bc089f78" => :mojave
-    sha256 "2741164707a47a18d9a750420d306730825332098be73f7eb02f29530f8b74aa" => :high_sierra
+    sha256 "b36a2c71ea7fce07482646776be5f4a380ddb7b8143a55350037d0576871cf2f" => :big_sur
+    sha256 "8441273e383d1a79787cba483f9d27c78e03722596c4a80bd4bf636933226b69" => :catalina
+    sha256 "2630927aa177293db660deea99133bab70247c0f9c751c5e21d9a18c38f5a2c0" => :mojave
+    sha256 "b7c4c8bf2817ec659a33f1fa8af1e049bba199e2f08bf246a99cbda036eba523" => :high_sierra
   end
 
   depends_on "gmp" => :build
+  depends_on "ocaml" => :build
   depends_on "opam" => :build
   depends_on "pcre"
   depends_on "pkg-config"
+
+  uses_from_macos "m4"
+  uses_from_macos "unzip"
   uses_from_macos "zlib"
 
   def install
@@ -23,15 +29,16 @@ class Comby < Formula
     ENV["OPAMROOT"] = opamroot
     ENV["OPAMYES"] = "1"
 
-    system "opam", "init", "--no-setup", "--disable-sandboxing", "--compiler=4.09.0", "--jobs=1"
+    system "opam", "init", "--no-setup", "--disable-sandboxing"
     system "opam", "config", "exec", "--", "opam", "install", ".", "--deps-only", "-y"
+
+    ENV.prepend_path "LIBRARY_PATH", opamroot/"default/lib/hack_parallel" # for -lhp
     system "opam", "config", "exec", "--", "make", "release"
+
     bin.install "_build/default/src/main.exe" => "comby"
   end
 
   test do
-    assert_equal "0.12.0", shell_output("#{bin}/comby -version").strip
-
     expect = <<~EXPECT
       --- /dev/null
       +++ /dev/null

@@ -2,20 +2,27 @@ class GitReview < Formula
   include Language::Python::Virtualenv
 
   desc "Submit git branches to gerrit for review"
-  homepage "https://git.openstack.org/cgit/openstack-infra/git-review"
+  homepage "https://opendev.org/opendev/git-review"
   url "https://files.pythonhosted.org/packages/2c/e6/e4f1b999af2493a5cc5e050f0869b29f30914f94016abf48c77c6307745b/git-review-1.28.0.tar.gz"
   sha256 "8e3aabb7b9484063e49c2504d137609401e32ad5128ff2a5cf43e98d5d3dc15a"
-  revision 1
-  head "https://git.openstack.org/openstack-infra/git-review.git"
+  license "Apache-2.0"
+  revision 3
+  head "https://opendev.org/opendev/git-review.git"
+
+  livecheck do
+    url :stable
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "219c2d8d7a31eb8b574abd3cab053662e3e9c3303a4b0238f2f6dee84159b9a5" => :catalina
-    sha256 "6d348cd0ef827adf60c6f6c569ef4fc606777abfc3413055eaa7dcfaebc8c921" => :mojave
-    sha256 "4dea8ae739c4855b2858b875c13f11b91a8221497f7b62d6ae22651c7eda3750" => :high_sierra
+    sha256 "190c3c9830ee15af21693da67676eb63fe1db783e8399f842d6adfc7097caf07" => :big_sur
+    sha256 "341a0755197859195ec1f2a8be8db5171977503cdd7c64ce15208820496ca3cf" => :arm64_big_sur
+    sha256 "4503d5b3e596e408beff669df65c3761bfe39727a8f98fc89868341d47194a1f" => :catalina
+    sha256 "804656f3cf7beeedab1fba587a3407f2718fe3d146bdcbc6c2a41863620048bc" => :mojave
+    sha256 "ecd779098abba89d86f749bdfa37f261978e6c12de928b3e5eb69e7e00a598e8" => :high_sierra
   end
 
-  depends_on "python@3.8"
+  depends_on "python@3.9"
 
   resource "certifi" do
     url "https://files.pythonhosted.org/packages/41/bf/9d214a5af07debc6acf7f3f257265618f1db242a3f8e49a9b516f24523a6/certifi-2019.11.28.tar.gz"
@@ -56,7 +63,7 @@ class GitReview < Formula
     system "git", "init"
     system "git", "config", "user.name", "BrewTestBot"
     system "git", "config", "user.email", "BrewTestBot@test.com"
-    system "git", "remote", "add", "gerrit", "https://github.com/Homebrew/homebrew.github.io"
+    system "git", "remote", "add", "gerrit", "https://github.com/Homebrew/brew.sh"
     (testpath/".git/hooks/commit-msg").write "# empty - make git-review happy"
     (testpath/"foo").write "test file"
     system "git", "add", "foo"

@@ -1,39 +1,35 @@
 class Doctl < Formula
   desc "Command-line tool for DigitalOcean"
   homepage "https://github.com/digitalocean/doctl"
-  url "https://github.com/digitalocean/doctl/archive/v1.37.0.tar.gz"
-  sha256 "acd34035c3ec604ae4266bdf468d8b7644d6e13701dccc739a89a7a896a029bb"
+  url "https://github.com/digitalocean/doctl/archive/v1.54.1.tar.gz"
+  sha256 "f61746217994a7270ac32d9707a7c2906e94821238bdb938b0e3be70f2f2dcb5"
+  license "Apache-2.0"
   head "https://github.com/digitalocean/doctl.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "fe92b71ce849a441b99b114f1dd4253020044377f069da830d395a3f89b663b9" => :catalina
-    sha256 "2e0e572183215417b83170b9168cc5cacf5f8616f69fc8598e9dfa768d1e58a6" => :mojave
-    sha256 "1fbfe070066be2b38f0e945edee4fdd6b8ca36ccb802313c46c1418a57987068" => :high_sierra
+    sha256 "c7364270f4ed854ac83472230a0f99b406c9e97bea23965778864829f3f7862e" => :big_sur
+    sha256 "634bd6e36f69b5de8d6cdee81291ef5b205b7617b2896fb18292d60cf1c36325" => :arm64_big_sur
+    sha256 "8ba22777e8cb899332d661e97616ae35c5a4a1bcb1b3175198773fbe6e9ff0cb" => :catalina
+    sha256 "617faa7920513cc0d8851667f9840dabcdde844691619a14415018ef25e80208" => :mojave
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = buildpath
+    base_flag = "-X github.com/digitalocean/doctl"
+    ldflags = %W[
+      #{base_flag}.Major=#{version.major}
+      #{base_flag}.Minor=#{version.minor}
+      #{base_flag}.Patch=#{version.patch}
+      #{base_flag}.Label=release
+    ].join(" ")
 
-    doctl_version = version.to_s.split(/\./)
-
-    src = buildpath/"src/github.com/digitalocean/doctl"
-    src.install buildpath.children
-    src.cd do
-      base_flag = "-X github.com/digitalocean/doctl"
-      ldflags = %W[
-        #{base_flag}.Major=#{doctl_version[0]}
-        #{base_flag}.Minor=#{doctl_version[1]}
-        #{base_flag}.Patch=#{doctl_version[2]}
-        #{base_flag}.Label=release
-      ].join(" ")
-      system "go", "build", "-ldflags", ldflags, "-o", bin/"doctl", "github.com/digitalocean/doctl/cmd/doctl"
-    end
+    system "go", "build", "-ldflags", ldflags, *std_go_args, "github.com/digitalocean/doctl/cmd/doctl"
 
     (bash_completion/"doctl").write `#{bin}/doctl completion bash`
     (zsh_completion/"_doctl").write `#{bin}/doctl completion zsh`
+    (fish_completion/"doctl.fish").write `#{bin}/doctl completion fish`
   end
 
   test do

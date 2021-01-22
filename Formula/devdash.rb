@@ -1,23 +1,25 @@
 class Devdash < Formula
   desc "Highly Configurable Terminal Dashboard for Developers"
   homepage "https://thedevdash.com"
-  url "https://github.com/Phantas0s/devdash/archive/v0.2.0.tar.gz"
-  sha256 "11760bb308680bcbfb138dd57df4a6b4b069ce082cf9e53275028bd23ea23b78"
+  url "https://github.com/Phantas0s/devdash/archive/v0.4.1.tar.gz"
+  sha256 "801a4c9b316834589b472e87d2ed16a093b2e6031cb2724668c5ea61b28813c8"
+  license "Apache-2.0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "61dad3989ec4abe1974a3c4f3b07df45c2b1595a5130cde2fcf318b30f3c5183" => :catalina
-    sha256 "5ac83d288c59595929f60649342a0f858063c34588b50a7419b55b85fe3173e9" => :mojave
-    sha256 "b4111ca6ffa4de540c174abbbd902d533a63c628d1bdd050f9b5afc3e5aeb19c" => :high_sierra
+    sha256 "5e62dd8b464ba2ade11434f471dc51aaea30b1c799ef0aa4096c5ccabe534508" => :big_sur
+    sha256 "c6dc9ae5887a01f241dc9e79866dce93f985f53ae147c99af5a0c6a7159513bf" => :arm64_big_sur
+    sha256 "011dfa77fabb7a61086a383e8af8dad8239d29732fa0f5a0737c9787e214cdf1" => :catalina
+    sha256 "17e84eaa344dd543c936f140f08515918d00a847a675bd64eb9d4e256f8b4298" => :mojave
   end
 
   depends_on "go" => :build
 
   def install
-    system "go", "build", "-o", "#{bin}/devdash", "./cmd/devdash"
+    system "go", "build", *std_go_args
   end
 
   test do
-    system bin/"devdash", "-term"
+    system bin/"devdash", "-h"
   end
 end

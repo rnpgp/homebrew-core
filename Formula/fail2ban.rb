@@ -1,23 +1,29 @@
 class Fail2ban < Formula
   desc "Scan log files and ban IPs showing malicious signs"
   homepage "https://www.fail2ban.org/"
-  url "https://github.com/fail2ban/fail2ban/archive/0.10.5.tar.gz"
-  sha256 "a665df6338cf836edd90d1c87dcef28c8cec1aaae5f72e3f2a45ecda89a7ba5f"
+  url "https://github.com/fail2ban/fail2ban/archive/0.11.2.tar.gz"
+  sha256 "383108e5f8644cefb288537950923b7520f642e7e114efb843f6e7ea9268b1e0"
+  license "GPL-2.0"
+
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f2605d6a90684a723f5ac164483846d5a97e9b17ec5a8e3e39c34fe7e544275a" => :catalina
-    sha256 "bde88951f2011891000bfb6cba6035d1ec65e021633baf2296c3aaa00260a943" => :mojave
-    sha256 "e80aa92198a8c6144bfda9a286a54a20b5b5c377e6f082120da33d0f9cf9bb35" => :high_sierra
+    sha256 "dccbafae1bda5f12ef0ba27f74069fb179376e9a50adf0a597ff7d6d978c12f1" => :big_sur
+    sha256 "dc4e847cf92ddfbd7e70647f671de4e5f64a7752b7d9334455b528e0fc9318d9" => :catalina
+    sha256 "eb5646fd06a94a1638b44fc0afd4406bf88dc3bb4672ae68e264dc5455f10d05" => :mojave
   end
 
   depends_on "help2man" => :build
   depends_on "sphinx-doc" => :build
-  depends_on "python@3.8"
+  depends_on "python@3.9"
 
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python3.8/site-packages"
-    ENV["PYTHON"] = Formula["python@3.8"].opt_bin/"python3"
+    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python3.9/site-packages"
+    ENV["PYTHON"] = Formula["python@3.9"].opt_bin/"python3"
 
     rm "setup.cfg"
     Dir["config/paths-*.conf"].each do |r|
@@ -68,6 +74,7 @@ class Fail2ban < Formula
     inreplace "setup.py", "if os.path.exists('#{var}/run')", "if True"
     inreplace "setup.py", "platform_system in ('linux',", "platform_system in ('linux', 'darwin',"
 
+    system "./fail2ban-2to3"
     system "python3", "setup.py", "install", "--prefix=#{libexec}"
 
     cd "doc" do
@@ -76,7 +83,7 @@ class Fail2ban < Formula
     end
 
     bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    bin.env_script_all_files(libexec/"bin", PYTHONPATH: ENV["PYTHONPATH"])
     man1.install Dir["man/*.1"]
     man5.install "man/jail.conf.5"
   end
@@ -108,7 +115,7 @@ class Fail2ban < Formula
     EOS
   end
 
-  plist_options :startup => true
+  plist_options startup: true
 
   def plist
     <<~EOS

@@ -1,21 +1,31 @@
 class Sn0int < Formula
   desc "Semi-automatic OSINT framework and package manager"
   homepage "https://github.com/kpcyrd/sn0int"
-  url "https://github.com/kpcyrd/sn0int/archive/v0.15.0.tar.gz"
-  sha256 "6fc1819eda57dff5e580ce9980a8526bb076f96845adfd3f41566416ffdf729c"
+  url "https://github.com/kpcyrd/sn0int/archive/v0.20.0.tar.gz"
+  sha256 "315061362aabfa3a0a8a5a15ecb06b41e8b9603cb3ef50219e4015f2ffea4184"
+  license "GPL-3.0-or-later"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "7d295b60c582fa507bc91eead8a3c6e158eb10b376f959b698ffc340014dcaa8" => :catalina
-    sha256 "3a1c89314cbba6b30faae25982886d49bc50fbd8a230855cddb7f393b831ebeb" => :mojave
-    sha256 "835293cc217458201799d60e59091e49e7cdd0aebd025220eec8b88d97865b96" => :high_sierra
+    cellar :any
+    sha256 "c9b3cf070d01ecc5ad921e5654f5a7765e90a294e4e2bfd941a995308a4a5bad" => :big_sur
+    sha256 "cc24878380598597022557113c8355f9d97cffa69665022521cbde65886a26b5" => :arm64_big_sur
+    sha256 "9689b81c3e4e2a04cf05d150422949b87a7f24d219817716e2b82b58eb2191c5" => :catalina
+    sha256 "d2c817bf73cb79a88c208cb22bcb7e9cc24d4d37448d3cdc1bfec7b8efbab9cd" => :mojave
   end
 
+  depends_on "pkg-config" => :build
   depends_on "rust" => :build
   depends_on "sphinx-doc" => :build
+  depends_on "libsodium"
+
+  uses_from_macos "sqlite"
+
+  on_linux do
+    depends_on "libseccomp"
+  end
 
   def install
-    system "cargo", "install", "--locked", "--root", prefix, "--path", "."
+    system "cargo", "install", *std_cargo_args
 
     system "#{bin}/sn0int completions bash > sn0int.bash"
     system "#{bin}/sn0int completions fish > sn0int.fish"

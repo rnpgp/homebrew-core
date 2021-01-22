@@ -1,21 +1,29 @@
 class Crystal < Formula
   desc "Fast and statically typed, compiled language with Ruby-like syntax"
   homepage "https://crystal-lang.org/"
+  license "Apache-2.0"
+  revision 2
 
   stable do
-    url "https://github.com/crystal-lang/crystal/archive/0.32.1.tar.gz"
-    sha256 "66b62d0fb5bfa6547f285eb520f7fd0bc57bc994babf54cb8e7a61e613c79399"
+    url "https://github.com/crystal-lang/crystal/archive/0.35.1.tar.gz"
+    sha256 "d324c79002b8a871997049e89cac3989fa48083e11bf9b8ec7fe2d1e94b35199"
 
     resource "shards" do
-      url "https://github.com/crystal-lang/shards/archive/v0.8.1.tar.gz"
-      sha256 "75c74ab6acf2d5c59f61a7efd3bbc3c4b1d65217f910340cb818ebf5233207a5"
+      url "https://github.com/crystal-lang/shards/archive/v0.11.1.tar.gz"
+      sha256 "e78095867334b4058f860c6da8dc3892994769ef51795de74ffb708a66c6847d"
     end
   end
 
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
+
   bottle do
-    sha256 "024e5e9c4b1f93863fa2ccfbc8fb98c3e494d6f0e0edfb5da5838826e6e63e0e" => :catalina
-    sha256 "cd590caeb6a39bd3555683e3b642ef19eaa5711740cacf19a67ab86cee4352a4" => :mojave
-    sha256 "cdabfcf0fc44bf640605c56eaa4be42e668acd022a1b62b44ca6405de5a60ad2" => :high_sierra
+    cellar :any
+    sha256 "c382e452d3586561986a8eea143dc09fb3ca089c989d9c54a7a3cd4d054f1624" => :big_sur
+    sha256 "e3907b45ca9c3e0344d130141d23915c5825d34b27660b6f1ea847351b127fb5" => :catalina
+    sha256 "0aa5aa3835d42d9139ede2d3e134d29db4d43cc29f0e735f17c48c1bdcc7ea0a" => :mojave
   end
 
   head do
@@ -34,7 +42,7 @@ class Crystal < Formula
   depends_on "gmp" # std uses it but it's not linked
   depends_on "libevent"
   depends_on "libyaml"
-  depends_on "llvm"
+  depends_on "llvm@9"
   depends_on "openssl@1.1" # std uses it but it's not linked
   depends_on "pcre"
   depends_on "pkg-config" # @[Link] will use pkg-config if available
@@ -52,20 +60,20 @@ class Crystal < Formula
   end
 
   resource "boot" do
-    url "https://github.com/crystal-lang/crystal/releases/download/0.31.1/crystal-0.31.1-1-darwin-x86_64.tar.gz"
-    version "0.31.1-1"
-    sha256 "ffc655df0efe8004058f87750949b7a2b165d8baef73c5596193eba1c17efdb5"
+    on_macos do
+      url "https://github.com/crystal-lang/crystal/releases/download/0.34.0/crystal-0.34.0-1-darwin-x86_64.tar.gz"
+      version "0.34.0-1"
+      sha256 "979b3006b03e5c598deb0c5a519b7fc9c5a805c930416b77b492a28af0a3a972"
+    end
+    on_linux do
+      url "https://github.com/crystal-lang/crystal/releases/download/0.34.0/crystal-0.34.0-1-linux-x86_64.tar.gz"
+      version "0.34.0-1"
+      sha256 "268ace9073ad073b56c07ac10e3f29927423a8b170d91420b0ca393fb02acfb1"
+    end
   end
 
   def install
     (buildpath/"boot").install resource("boot")
-
-    if build.head?
-      ENV["CRYSTAL_CONFIG_BUILD_COMMIT"] = Utils.popen_read("git rev-parse --short HEAD").strip
-    end
-
-    ENV["CRYSTAL_CONFIG_PATH"] = prefix/"src:lib"
-    ENV["CRYSTAL_CONFIG_LIBRARY_PATH"] = prefix/"embedded/lib"
     ENV.append_path "PATH", "boot/bin"
 
     resource("bdw-gc").stage(buildpath/"gc")
@@ -77,34 +85,54 @@ class Crystal < Formula
       system "make"
     end
 
-    ENV.prepend_path "CRYSTAL_LIBRARY_PATH", buildpath/"gc/.libs"
-
     # Build crystal
+    crystal_build_opts = []
+    crystal_build_opts << "release=true"
+    crystal_build_opts << "FLAGS=--no-debug"
+    crystal_build_opts << "CRYSTAL_CONFIG_LIBRARY_PATH="
+    crystal_build_opts << "CRYSTAL_CONFIG_BUILD_COMMIT=#{Utils.git_short_head}" if build.head?
     (buildpath/".build").mkpath
     system "make", "deps"
-    system "bin/crystal", "build",
-                          "-D", "without_openssl",
-                          "-D", "without_zlib",
-                          "-D", "preview_overflow",
-                          "-o", ".build/crystal",
-                          "src/compiler/crystal.cr",
-                          "--release", "--no-debug"
+    system "make", "crystal", *crystal_build_opts
 
-    # Build shards
+    # Build shards (with recently built crystal)
+    #
+    # Setup the same path the wrapper script would, but just for building shards.
+    # NOTE: it seems that the installed crystal in bin/"crystal" can be used while
+    #       building the formula. Otherwise this ad-hoc setup could be avoided.
+    embedded_crystal_path=`"#{buildpath/".build/crystal"}" env CRYSTAL_PATH`.strip
+    ENV["CRYSTAL_PATH"] = "#{embedded_crystal_path}:#{buildpath/"src"}"
+    ENV["CRYSTAL_LIBRARY_PATH"] = buildpath/"gc/.libs"
+
+    # Install shards
     resource("shards").stage do
-      system buildpath/"bin/crystal", "build",
-                                      "-o", buildpath/".build/shards",
-                                      "src/shards.cr",
-                                      "--release", "--no-debug"
+      ENV["CRYSTAL_OPTS"] = "--release --no-debug"
+      shards = nil
+      on_macos do
+        shards = buildpath/"boot/embedded/bin/shards"
+      end
+      on_linux do
+        shards = buildpath/"boot/bin/shards"
+      end
+      system "make", "bin/shards", "CRYSTAL=#{buildpath/"bin/crystal"}",
+                                   "SHARDS=#{shards}"
 
+      # Install shards
+      bin.install "bin/shards"
       man1.install "man/shards.1"
       man5.install "man/shard.yml.5"
     end
 
-    bin.install ".build/shards"
+    # Install crystal
     libexec.install ".build/crystal"
-    (bin/"crystal").write_env_script libexec/"crystal",
-      :PKG_CONFIG_PATH => "${PKG_CONFIG_PATH:+$PKG_CONFIG_PATH:}#{Formula["openssl"].opt_lib/"pkgconfig"}"
+    (bin/"crystal").write <<~SH
+      #!/bin/bash
+      EMBEDDED_CRYSTAL_PATH=$("#{libexec/"crystal"}" env CRYSTAL_PATH)
+      export CRYSTAL_PATH="${CRYSTAL_PATH:-"$EMBEDDED_CRYSTAL_PATH:#{prefix/"src"}"}"
+      export CRYSTAL_LIBRARY_PATH="${CRYSTAL_LIBRARY_PATH:+$CRYSTAL_LIBRARY_PATH:}#{prefix/"embedded/lib"}:/usr/local/lib"
+      export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+$PKG_CONFIG_PATH:}#{Formula["openssl@1.1"].opt_lib/"pkgconfig"}"
+      exec "#{libexec/"crystal"}" "${@}"
+    SH
 
     prefix.install "src"
     (prefix/"embedded/lib").install "#{buildpath/"gc"}/.libs/libgc.a"
